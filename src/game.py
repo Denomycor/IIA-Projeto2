@@ -1,11 +1,11 @@
 import copy
 from jogos import GameState
 from jogos import Game
-from enum import IntEnum
+from enum import Enum
 
 
 
-class playersEnum(IntEnum):
+class playersEnum(Enum):
     attacker = 1
     defender = 2
 
@@ -211,26 +211,3 @@ class Jogo2048_48(Game):
         #TODO
         return super().jogar(jogador1, jogador2, verbose=verbose)
 
-    
-game = Jogo2048_48((0,1), (1,2))
-game.display(game.initial)
-
-res = game.result(game.initial, "cima")
-game.display(res)
-print(game.actions(res))
-
-res = game.result(res, "1,0")
-game.display(res)
-print(game.actions(res))
-
-res = game.result(res, "cima")
-game.display(res)
-print(game.actions(res))
-
-res = game.result(res, "3,3")
-game.display(res)
-print(game.actions(res))
-
-res = game.result(res, "esquerda")
-game.display(res)
-print(game.actions(res))
