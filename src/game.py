@@ -1,13 +1,10 @@
 import copy
 from jogos import GameState
 from jogos import Game
-from enum import Enum
 
 
-
-class playersEnum(Enum):
-    attacker = 1
-    defender = 2
+#TODO Remove player enum, change to "atacante" e "defendor" strings
+#Start to work on players AI functions
 
 def alignLeft(str, chars):
     return (" "*(chars-len(str)))+str
@@ -17,7 +14,7 @@ class Jogo2048State(GameState):
     
     """Returns a new state representing the board after the attacker player chooses a direction"""
     def __collapse(self, direction):
-        newstate = Jogo2048State(to_move=playersEnum.defender, utility=0, board = copy.deepcopy(self.board), moves=self.moves+1)
+        newstate = Jogo2048State(to_move="defensor", utility=0, board = copy.deepcopy(self.board), moves=self.moves+1)
 
         if direction == "cima":          
             for i in range(4):
@@ -125,10 +122,10 @@ class Jogo2048State(GameState):
     
     """Returns a new state representing the board after a player action, doesn't check whether the action is valid or not"""
     def next_move(self, move):
-        if self.to_move == playersEnum.attacker:
+        if self.to_move == "atacante":
             return self.__collapse(move)
-        elif self.to_move == playersEnum.defender:
-            newstate = Jogo2048State(to_move=playersEnum.attacker, utility=0, board = copy.deepcopy(self.board), moves=self.moves+1)
+        elif self.to_move == "defensor":
+            newstate = Jogo2048State(to_move="atacante", utility=0, board = copy.deepcopy(self.board), moves=self.moves+1)
             newstate.board[3-int(move[0])][int(move[2])] = 2
             return newstate
         else:
@@ -136,10 +133,10 @@ class Jogo2048State(GameState):
 
     """Returns the other player, the one not playing this turn"""
     def other(self):
-        if self.to_move == playersEnum.attacker:
-            return playersEnum.defender
-        if self.to_move == playersEnum.defender:
-            return playersEnum.attacker
+        if self.to_move == "atacante":
+            return "defensor"
+        if self.to_move == "defensor":
+            return "atacante"
         else:
             raise RuntimeError("Error - invalid player descriptor")
 
@@ -153,9 +150,9 @@ class Jogo2048State(GameState):
 
     """Returns all valid moves for the state"""
     def get_moves(self):
-        if self.to_move == playersEnum.attacker:
+        if self.to_move == "atacante":
             return [ a for a in ["cima", "direita", "baixo", "esquerda"] if self.__collapse(a).board != self.board ]
-        if self.to_move == playersEnum.defender:
+        if self.to_move == "defensor":
             res = []
             for i in range(3, -1, -1):
                 for j in range(4):
@@ -173,7 +170,7 @@ class Jogo2048_48(Game):
 
     def __init__(self, pos1, pos2):
          #Board is a list of lists 4*4 which stores the board pieces
-        self.initial = Jogo2048State(to_move = playersEnum.attacker, utility = (16-2)/16.0, board = [ [ 0 for j in range(4)] for i in range(4)], moves = 0)
+        self.initial = Jogo2048State(to_move = "atacante", utility = (16-2)/16.0, board = [ [ 0 for j in range(4)] for i in range(4)], moves = 0)
         self.initial.board[3-pos1[0]][pos1[1]]=2
         self.initial.board[3-pos2[0]][pos2[1]]=2
         self.points = 0
@@ -191,15 +188,15 @@ class Jogo2048_48(Game):
             for j in i:
                 if j==0:
                     c+=1
-        if player == playersEnum.attacker:
+        if player == "atacante":
             return c/16.0
-        if player == playersEnum.defender:
+        if player == "defensor":
             return (16-c)/16.0
         else:
             raise RuntimeError("Error - invalid player descriptor")
 
     def terminal_test(self, state):
-        return not (state.to_move == playersEnum.defender or bool(len(state.get_moves())))
+        return not (state.to_move == "defensor" or bool(len(state.get_moves())))
 
     def to_move(self, state):
         return state.to_move
