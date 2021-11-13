@@ -1,6 +1,5 @@
 import copy
-from jogos import GameState
-from jogos import Game
+from jogos import *
 
 
 #TODO Remove player enum, change to "atacante" e "defendor" strings
@@ -208,3 +207,5 @@ class Jogo2048_48(Game):
         #TODO
         return super().jogar(jogador1, jogador2, verbose=verbose)
 
+t = Jogo2048_48((1,2), (3,0))
+t.jogar(alphabeta_player, alphabeta_player)
