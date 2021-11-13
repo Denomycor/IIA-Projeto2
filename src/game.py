@@ -1,9 +1,7 @@
 import copy
 from jogos import *
 
-
-#TODO Remove player enum, change to "atacante" e "defendor" strings
-#Start to work on players AI functions
+#TODO Start to work on players AI functions
 
 def alignLeft(str, chars):
     return (" "*(chars-len(str)))+str
@@ -161,8 +159,6 @@ class Jogo2048State(GameState):
         else:
             raise RuntimeError("Error - invalid player descriptor")
 
-    
-    
 
 
 class Jogo2048_48(Game):
@@ -178,7 +174,9 @@ class Jogo2048_48(Game):
         return state.get_moves()
 
     def result(self, state, move):
-        return state.next_move(move)
+        ref = state.next_move(move)
+        ref.utility = self.utility(ref, ref.to_move)
+        return ref
 
     def utility(self, state, player):
         # A state is as usefull, for the attacker, as the number of empty pieces on the board.
@@ -207,5 +205,3 @@ class Jogo2048_48(Game):
         #TODO
         return super().jogar(jogador1, jogador2, verbose=verbose)
 
-t = Jogo2048_48((1,2), (3,0))
-t.jogar(alphabeta_player, alphabeta_player)
