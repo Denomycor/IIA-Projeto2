@@ -167,22 +167,11 @@ class Jogo2048_48(Game):
 
     def result(self, state, move):
         ref = state.next_move(move)
-        ref.utility = self.utility(ref, ref.to_move)
+        ref._replace(utility = self.utility(ref, ref.to_move))
         return ref
 
     def utility(self, state, player):
-        # A state is as usefull, for the attacker, as the number of empty pieces on the board.
-        c = 0
-        for i in state.board:
-            for j in i:
-                if j==0:
-                    c+=1
-        if player == "atacante":
-            return c/16.0
-        if player == "defensor":
-            return (16-c)/16.0
-        else:
-            raise RuntimeError("Error - invalid player descriptor")
+        return boardEmpty(state.board)
 
     def terminal_test(self, state):
         return not (state.to_move == "defensor" or bool(len(state.get_moves())))
@@ -195,8 +184,17 @@ class Jogo2048_48(Game):
 
     def jogar(self, jogador1, jogador2, verbose=True):
         #TODO
-        return super().jogar(jogador1, jogador2, verbose=verbose)
+        return super().jogar(jogador1, jogador2, verbose)
 
+
+
+class Player:
+    def __init__(self, name, alg):
+        self.name = name
+        self.alg = alg
+
+    def display(self):
+        print(self.name)
 
 """ TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE """
 tmp = Jogo2048_48([0,1], [3,3])
