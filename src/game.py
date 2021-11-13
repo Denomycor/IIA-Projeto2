@@ -3,119 +3,65 @@ from jogos import GameState
 from jogos import Game
 
 
-#TODO Remove player enum, change to "atacante" e "defendor" strings
-#Start to work on players AI functions
+#Helpers
+ref = [0,0,0,0]
 
 def alignLeft(str, chars):
     return (" "*(chars-len(str)))+str
 
-# GameState = namedtuple('GameState', 'to_move, utility, board, moves')
+def reverse( line ):
+    return line[::-1]
+
+def transpose( matrix ):
+    return list(map(lambda x: list(x), zip(*matrix)))
+
+def removeZeros( line ):
+    return list(filter( lambda x: x != 0, line))
+
+def sumStep( line ):
+    if len(line) < 2:
+        return False
+
+    done = False
+    for i in range(len(line)-2, -1, -1):
+        if line[i] == line[i+1]:
+            line[i+1] *= 2
+            line[i] = 0
+            i -= 1
+            done = True
+            continue
+    return done
+
+def pad( line ):
+    return ref[:len(ref)-len(line):] + line
+
+def sumLine( line ):
+    li = removeZeros(line)
+
+    while sumStep( li ):
+        li = removeZeros( li )
+    return pad(li)
+
+move = {
+    "direita": lambda m: list( map( lambda l: sumLine(l), m )), 
+    "esquerda": lambda m: list( map( lambda l: reverse(sumLine(reverse(l))) , m )),
+    "cima": lambda m: transpose( map( lambda l: reverse(sumLine(reverse(l))) , transpose(m) ) ),
+    "baixo": lambda m: transpose( map( lambda l: sumLine(l) , transpose(m) ) ),
+}
+
+#TODO Remove player enum, change to "atacante" e "defendor" strings
+#Start to work on players AI functions
+
+"""--------------------------------------------------------------------------------------
+    State Class
+--------------------------------------------------------------------------------------"""
 class Jogo2048State(GameState):
     
     """Returns a new state representing the board after the attacker player chooses a direction"""
     def __collapse(self, direction):
-        newstate = Jogo2048State(to_move="defensor", utility=0, board = copy.deepcopy(self.board), moves=self.moves+1)
-
-        if direction == "cima":          
-            for i in range(4):
-                if newstate.board[0][i] == newstate.board[1][i] and newstate.board[1][i] == newstate.board[2][i] and newstate.board[2][i] == newstate.board[3][i]:
-                    newstate.board[0][i] <<=1
-                    newstate.board[1][i] <<=1
-                    newstate.board[2][i] = 0
-                    newstate.board[3][i] = 0
-                else:
-                    moved = True
-                    while(moved):
-                        moved = False
-                        for p in range(3):
-
-                            if newstate.board[p][i]==0 and newstate.board[p+1][i]!=0:
-                                newstate.board[p][i]=newstate.board[p+1][i]
-                                newstate.board[p+1][i] = 0
-                                moved = True
-                                continue
-
-                            if newstate.board[p][i] == newstate.board[p+1][i] and newstate.board[p][i] !=0 :
-                                newstate.board[p][i] <<=1
-                                newstate.board[p+1][i] = 0
-                                moved = True
-                                continue
-
-        elif direction == "esquerda":
-            for i in range(4):
-                if newstate.board[i][0] == newstate.board[i][1] and newstate.board[i][1] == newstate.board[i][2] and newstate.board[i][2] == newstate.board[i][3]:
-                    newstate.board[i][0] <<=1
-                    newstate.board[i][1] <<=1
-                    newstate.board[i][2] = 0
-                    newstate.board[i][3] = 0
-                else:
-                    moved = True
-                    while(moved):
-                        moved = False
-                        for p in range(3):
-
-                            if newstate.board[i][p]==0 and newstate.board[i][p+1]!=0:
-                                newstate.board[i][p]=newstate.board[i][p+1]
-                                newstate.board[i][p+1] = 0
-                                moved = True
-                                continue
-
-                            if newstate.board[i][p] == newstate.board[i][p+1] and newstate.board[i][p] !=0 :
-                                newstate.board[i][p] <<=1
-                                newstate.board[i][p+1] = 0
-                                moved = True
-                                continue
-
-        elif direction == "baixo":
-            for i in range(4):
-                if newstate.board[0][i] == newstate.board[1][i] and newstate.board[1][i] == newstate.board[2][i] and newstate.board[2][i] == newstate.board[3][i]:
-                    newstate.board[3][i] <<=1
-                    newstate.board[2][i] <<=1
-                    newstate.board[1][i] = 0
-                    newstate.board[0][i] = 0
-                else:
-                    moved = True
-                    while(moved):
-                        moved = False
-                        for p in range(3, 0, -1):
-
-                            if newstate.board[p][i]==0 and newstate.board[p-1][i]!=0:
-                                newstate.board[p][i]=newstate.board[p-1][i]
-                                newstate.board[p-1][i] = 0
-                                moved = True
-                                continue
-
-                            if newstate.board[p][i] == newstate.board[p-1][i] and newstate.board[p][i] !=0 :
-                                newstate.board[p][i] <<=1
-                                newstate.board[p-1][i] = 0
-                                moved = True
-                                continue
-
-        elif direction == "direita":
-            for i in range(4):
-                if newstate.board[i][0] == newstate.board[i][1] and newstate.board[i][1] == newstate.board[i][2] and newstate.board[i][2] == newstate.board[i][3]:
-                    newstate.board[i][3] <<=1
-                    newstate.board[i][2] <<=1
-                    newstate.board[i][1] = 0
-                    newstate.board[i][0] = 0
-                else:
-                    moved = True
-                    while(moved):
-                        moved = False
-                        for p in range(3, 0, -1):
-
-                            if newstate.board[i][p]==0 and newstate.board[i][p-1]!=0:
-                                newstate.board[i][p]=newstate.board[i][p-1]
-                                newstate.board[i][p-1] = 0
-                                moved = True
-                                continue
-
-                            if newstate.board[i][p] == newstate.board[i][p-1] and newstate.board[i][p] !=0 :
-                                newstate.board[i][p] <<=1
-                                newstate.board[i][p-1] = 0
-                                moved = True
-                                continue
-        else:
+        try:
+            newstate = Jogo2048State(to_move="defensor", utility=0, board = move[direction](self.board), moves=self.moves+1)
+        except KeyError:
             raise RuntimeError("Error - invalid direction of movement" )
 
         return newstate
@@ -162,10 +108,10 @@ class Jogo2048State(GameState):
         else:
             raise RuntimeError("Error - invalid player descriptor")
 
-    
-    
 
-
+"""--------------------------------------------------------------------------------------
+    Game Class
+--------------------------------------------------------------------------------------"""
 class Jogo2048_48(Game):
 
     def __init__(self, pos1, pos2):
@@ -207,4 +153,3 @@ class Jogo2048_48(Game):
     def jogar(self, jogador1, jogador2, verbose=True):
         #TODO
         return super().jogar(jogador1, jogador2, verbose=verbose)
-
