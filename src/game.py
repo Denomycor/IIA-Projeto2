@@ -198,7 +198,6 @@ class Jogo2048_48(Game):
         return super().jogar(jogador1, jogador2, verbose=verbose)
 
 
-
+""" TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE """
 tmp = Jogo2048_48([0,1], [3,3])
-
 tmp.display(tmp.initial)
