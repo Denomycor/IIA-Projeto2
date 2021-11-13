@@ -40,7 +40,7 @@ def sumLine( line ):
         li = removeZeros( li )
     return pad(li)
 
-move = {
+actions = {
     "direita": lambda m: list( map( lambda l: sumLine(l), m )), 
     "esquerda": lambda m: list( map( lambda l: reverse(sumLine(reverse(l))) , m )),
     "cima": lambda m: transpose( map( lambda l: reverse(sumLine(reverse(l))) , transpose(m) ) ),
@@ -100,7 +100,7 @@ class Jogo2048State(GameState):
     """Returns a new state representing the board after the attacker player chooses a direction"""
     def __collapse(self, direction):
         try:
-            newstate = Jogo2048State(to_move="defensor", utility=0, board = move[direction](self.board), moves=self.moves+1)
+            newstate = Jogo2048State(to_move="defensor", utility=0, board = actions[direction](self.board), moves=self.moves+1)
         except KeyError:
             raise RuntimeError("Error - invalid direction of movement" )
 
