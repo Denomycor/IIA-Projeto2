@@ -6,6 +6,48 @@ from jogos import *
 def alignLeft(str, chars):
     return (" "*(chars-len(str)))+str
 
+#The highter the avg the more combined pieces are. Ranges from 2 to max_piece_value
+def boardAvg(board):
+    c = 0
+    acc = 0
+    for i in board:
+        for j in i:
+            if(j!=0):
+                c+=1
+                acc+=j
+    return acc/float(c)
+
+#The emptier the board the furthest the game is to ending. Ranges from 0 to 15
+def boardEmpty(board):
+    c = 0
+    for i in board:
+        for j in i:
+            if j==0:
+                c+=1
+                return c
+
+#The more pieces with equal value lined up with no other pieces between them the better the board. Ranges from 0 to 48
+def boardComb(board):
+    pot=0
+    for i in range(4):
+        last = board[i][0]
+        for j in range(1, 4, 1):
+            if board[i][j] == last:
+                pot+=1
+            elif board[i][j]!=last and  board[i][j]!=0:
+                last = board[i][j]
+
+    for i in range(4):
+        last = board[0][i]
+        for j in range(1, 4, 1):
+            if board[j][i] == last:
+                pot+=1
+            elif board[j][i]!=last and  board[j][i]!=0:
+                last = board[j][i]
+    return pot
+    
+
+
 # GameState = namedtuple('GameState', 'to_move, utility, board, moves')
 class Jogo2048State(GameState):
     
