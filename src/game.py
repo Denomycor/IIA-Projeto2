@@ -50,9 +50,6 @@ move = {
 #TODO Remove player enum, change to "atacante" e "defendor" strings
 #Start to work on players AI functions
 
-"""--------------------------------------------------------------------------------------
-    State Class
---------------------------------------------------------------------------------------"""
 #The highter the avg the more combined pieces are. Ranges from 2 to max_piece_value
 def boardAvg(board):
     c = 0
@@ -94,7 +91,9 @@ def boardComb(board):
     return pot
     
 
-
+"""--------------------------------------------------------------------------------------
+    State Class
+--------------------------------------------------------------------------------------"""
 # GameState = namedtuple('GameState', 'to_move, utility, board, moves')
 class Jogo2048State(GameState):
     
