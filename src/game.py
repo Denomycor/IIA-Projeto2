@@ -27,7 +27,6 @@ def sumStep( line ):
             line[i] = 0
             i -= 1
             done = True
-            continue
     return done
 
 def pad( line ):
@@ -112,7 +111,7 @@ class Jogo2048State(GameState):
             return self.__collapse(move)
         elif self.to_move == "defensor":
             newstate = Jogo2048State(to_move="atacante", utility=0, board = copy.deepcopy(self.board), moves=self.moves+1)
-            newstate.board[3-int(move[0])][int(move[2])] = 2
+            newstate.board[int(move[0])][int(move[2])] = 2
             return newstate
         else:
             raise RuntimeError("Error - invalid player descriptor")
@@ -128,11 +127,12 @@ class Jogo2048State(GameState):
 
     """Prints the board"""
     def display(self):
+        print("="*28)
         for i in self.board:
             for j in i:
                 print(alignLeft(str(j), 5), end=" ")
             print()
-        print("-"*28)
+        print("="*28)
 
     """Returns all valid moves for the state"""
     def get_moves(self):
@@ -143,7 +143,7 @@ class Jogo2048State(GameState):
             for i in range(3, -1, -1):
                 for j in range(4):
                     if self.board[i][j] == 0:
-                        res.append(str(3-i)+","+str(j))
+                        res.append(str(i)+","+str(j))
             return res
         else:
             raise RuntimeError("Error - invalid player descriptor")
@@ -158,8 +158,8 @@ class Jogo2048_48(Game):
     def __init__(self, pos1, pos2):
          #Board is a list of lists 4*4 which stores the board pieces
         self.initial = Jogo2048State(to_move = "atacante", utility = (16-2)/16.0, board = [ [ 0 for j in range(4)] for i in range(4)], moves = 0)
-        self.initial.board[3-pos1[0]][pos1[1]]=2
-        self.initial.board[3-pos2[0]][pos2[1]]=2
+        self.initial.board[pos1[0]][pos1[1]]=2
+        self.initial.board[pos2[0]][pos2[1]]=2
         self.points = 0
 
     def actions(self, state):
@@ -196,3 +196,9 @@ class Jogo2048_48(Game):
     def jogar(self, jogador1, jogador2, verbose=True):
         #TODO
         return super().jogar(jogador1, jogador2, verbose=verbose)
+
+
+
+tmp = Jogo2048_48([0,1], [3,3])
+
+tmp.display(tmp.initial)
