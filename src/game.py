@@ -1,6 +1,5 @@
 import copy
-from jogos import GameState
-from jogos import Game
+from jogos import *
 
 
 #Helpers
@@ -109,6 +108,7 @@ class Jogo2048State(GameState):
             raise RuntimeError("Error - invalid player descriptor")
 
 
+
 """--------------------------------------------------------------------------------------
     Game Class
 --------------------------------------------------------------------------------------"""
@@ -125,7 +125,9 @@ class Jogo2048_48(Game):
         return state.get_moves()
 
     def result(self, state, move):
-        return state.next_move(move)
+        ref = state.next_move(move)
+        ref.utility = self.utility(ref, ref.to_move)
+        return ref
 
     def utility(self, state, player):
         # A state is as usefull, for the attacker, as the number of empty pieces on the board.
