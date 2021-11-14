@@ -205,11 +205,11 @@ class Player:
     def display(self):
         print(self.name)
 
+def eval_attacker(state, player):
+    return
 
-
-#Jogador agora com alpha-beta
 atacante = Player("atacante",
-                  lambda game, state: alphabeta_cutoff_search_new(state, game, depth_for_all, eval_fn = num_livres))
+                  lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = num_livres))
 
 
 
