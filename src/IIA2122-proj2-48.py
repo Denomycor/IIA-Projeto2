@@ -46,55 +46,6 @@ actions = {
     "baixo": lambda m: transpose( map( lambda l: sumLine(l) , transpose(m) ) ),
 }
 
-#Get the max value of the board
-def max_val(board):
-    max = 0
-    for i in board:
-        for j in i:
-            if j>max:
-                max = j
-    return max
-
-#The highter the avg the more combined pieces are. Ranges from 2 to max_piece_value
-def boardAvg(board):
-    c = 0
-    acc = 0
-    for i in board:
-        for j in i:
-            if(j!=0):
-                c+=1
-                acc+=j
-    return acc/float(c)/max_val(board)
-
-#The emptier the board the furthest the game is to ending. Ranges from 0 to 15
-def boardEmpty(board):
-    c = 0
-    for i in board:
-        for j in i:
-            if j==0:
-                c+=1
-    return c/15.0
-
-#The more pieces with equal value lined up with no other pieces between them the better the board. Ranges from 0 to 24
-def boardComb(board):
-    pot=0
-    for i in range(4):
-        last = board[i][0]
-        for j in range(1, 4, 1):
-            if board[i][j] == last:
-                pot+=1
-            elif board[i][j]!=last and  board[i][j]!=0:
-                last = board[i][j]
-
-    for i in range(4):
-        last = board[0][i]
-        for j in range(1, 4, 1):
-            if board[j][i] == last:
-                pot+=1
-            elif board[j][i]!=last and  board[j][i]!=0:
-                last = board[j][i]
-    return pot/24.0
-    
 
 """--------------------------------------------------------------------------------------
     State Class
@@ -163,7 +114,7 @@ class Jogo2048_48(Game):
 
     def __init__(self, pos1, pos2):
          #Board is a list of lists 4*4 which stores the board pieces
-        self.initial = Jogo2048State(to_move = "atacante", utility = (16-2)/16.0, board = [ [ 0 for j in range(4)] for i in range(4)], moves = 0)
+        self.initial = Jogo2048State(to_move = "atacante", utility = 0, board = [ [ 0 for j in range(4)] for i in range(4)], moves = 0)
         self.initial.board[pos1[0]][pos1[1]]=2
         self.initial.board[pos2[0]][pos2[1]]=2
         self.points = 0
@@ -177,7 +128,8 @@ class Jogo2048_48(Game):
         return ref
 
     def utility(self, state, player):
-        return boardEmpty(state.board)
+        #TODO
+        return
 
     def terminal_test(self, state):
         return not (state.to_move == "defensor" or bool(len(state.get_moves())))
@@ -197,6 +149,56 @@ class Jogo2048_48(Game):
 """--------------------------------------------------------------------------------------
     Players
 --------------------------------------------------------------------------------------"""
+#Get the max value of the board
+def max_val(board):
+    max = 0
+    for i in board:
+        for j in i:
+            if j>max:
+                max = j
+    return max
+
+#The highter the avg the more combined pieces are. Ranges from 2 to max_piece_value
+def boardAvg(board):
+    c = 0
+    acc = 0
+    for i in board:
+        for j in i:
+            if(j!=0):
+                c+=1
+                acc+=j
+    return acc/float(c)/max_val(board)
+
+#The emptier the board the furthest the game is to ending. Ranges from 0 to 15
+def boardEmpty(board):
+    c = 0
+    for i in board:
+        for j in i:
+            if j==0:
+                c+=1
+    return c/15.0
+
+#The more pieces with equal value lined up with no other pieces between them the better the board. Ranges from 0 to 24
+def boardComb(board):
+    pot=0
+    for i in range(4):
+        last = board[i][0]
+        for j in range(1, 4, 1):
+            if board[i][j] == last:
+                pot+=1
+            elif board[i][j]!=last and  board[i][j]!=0:
+                last = board[i][j]
+
+    for i in range(4):
+        last = board[0][i]
+        for j in range(1, 4, 1):
+            if board[j][i] == last:
+                pot+=1
+            elif board[j][i]!=last and  board[j][i]!=0:
+                last = board[j][i]
+    return pot/24.0
+    
+
 class Player:
     def __init__(self, name, alg):
         self.name = name
@@ -208,13 +210,17 @@ class Player:
 def eval_attacker(state, player):
     return
 
+def eval_defender(state, player):
+    return
+
 atacante = Player("atacante",
-                  lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = num_livres))
+                  lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = eval_attacker))
 
 
-
+defensor = Player("defensor",
+                  lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = eval_defender))
 
 
 """ TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE """
-tmp = Jogo2048_48([0,1], [3,3])
+tmp = Jogo2048_48([3,2], [3,3])
 tmp.display(tmp.initial)
