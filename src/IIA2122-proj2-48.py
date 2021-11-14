@@ -1,4 +1,5 @@
 import copy
+from functools import reduce
 from jogos import *
 
 #Helpers
@@ -64,6 +65,8 @@ class Jogo2048State(GameState):
     
     """Returns a new state representing the board after a player action, doesn't check whether the action is valid or not"""
     def next_move(self, move):
+        #TODO os novos estados criados precisam de ter o campo utility atualizado (nova pontuação)
+
         if self.to_move == "atacante":
             return self.__collapse(move)
         elif self.to_move == "defensor":
@@ -123,13 +126,11 @@ class Jogo2048_48(Game):
         return state.get_moves()
 
     def result(self, state, move):
-        ref = state.next_move(move)
-        ref._replace(utility = self.utility(ref, ref.to_move))
-        return ref
+        return state.next_move(move)
 
     def utility(self, state, player):
-        #TODO
-        return
+        #utility is the score on a current state, equal to both players
+        return state.utility 
 
     def terminal_test(self, state):
         return not (state.to_move == "defensor" or bool(len(state.get_moves())))
@@ -151,7 +152,7 @@ class Jogo2048_48(Game):
 --------------------------------------------------------------------------------------"""
 #Get the max value of the board
 def max_val(board):
-    max = 0
+    max = 2
     for i in board:
         for j in i:
             if j>max:
@@ -210,15 +211,56 @@ class Player:
 def eval_attacker(state, player):
     return
 
-def eval_defender(state, player):
-    return
-
 atacante = Player("atacante",
                   lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = eval_attacker))
 
+def eval_defender(state, player):
+    return
 
 defensor = Player("defensor",
                   lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = eval_defender))
+
+
+
+
+# Does hipolito algorithm uses alphabeta or not?
+
+def eval_hipolito(state, player):
+    moves = state.get_moves()
+    states = list(map(lambda m: state.next_move(m), moves))
+    max = 0
+    for i in range(1,len(states), 1):
+        if player == "atacante":
+            if states[i].utility > states[max].utility:
+                max = i
+        elif player == "defensor":
+            if 0-states[i].utility > 0-states[max].utility:
+                max = i
+        else:
+            raise RuntimeError("Invalid player")
+    return moves[i]
+
+def hipolitoF(game, state):
+    moves = state.get_moves()
+    states = list(map(lambda m: state.next_move(m), moves))
+    max = 0
+    for i in range(1,len(states), 1):
+        if game.to_move == "atacante":
+            if states[i].utility > states[max].utility:
+                max = i
+        elif game.to_move == "defensor":
+            if 0-states[i].utility > 0-states[max].utility:
+                max = i
+        else:
+            raise RuntimeError("Invalid player")
+    return moves[i]
+
+hipolito = Player("hipolito",
+                  lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = eval_hipolito))
+
+hipolito2 = Player("hipolito2", hipolitoF)
+
+
 
 
 """ TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE """
