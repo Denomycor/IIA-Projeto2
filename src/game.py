@@ -7,16 +7,16 @@ ref = [0,0,0,0]
 def alignLeft(str, chars):
     return (" "*(chars-len(str)))+str
 
-def reverse( line ):
+def reverse(line):
     return line[::-1]
 
-def transpose( matrix ):
+def transpose(matrix):
     return list(map(lambda x: list(x), zip(*matrix)))
 
-def removeZeros( line ):
+def removeZeros(line):
     return list(filter( lambda x: x != 0, line))
 
-def sumStep( line ):
+def sumStep(line):
     if len(line) < 2:
         return False
 
@@ -29,14 +29,14 @@ def sumStep( line ):
             done = True
     return done
 
-def pad( line ):
+def pad(line):
     return ref[:len(ref)-len(line):] + line
 
-def sumLine( line ):
+def sumLine(line):
     li = removeZeros(line)
 
-    while sumStep( li ):
-        li = removeZeros( li )
+    while sumStep(li):
+        li = removeZeros(li)
     return pad(li)
 
 actions = {
@@ -46,8 +46,14 @@ actions = {
     "baixo": lambda m: transpose( map( lambda l: sumLine(l) , transpose(m) ) ),
 }
 
-#TODO Remove player enum, change to "atacante" e "defendor" strings
-#Start to work on players AI functions
+#Get the max value of the board
+def max_val(board):
+    max = 0
+    for i in board:
+        for j in i:
+            if j>max:
+                max = j
+    return max
 
 #The highter the avg the more combined pieces are. Ranges from 2 to max_piece_value
 def boardAvg(board):
@@ -58,7 +64,7 @@ def boardAvg(board):
             if(j!=0):
                 c+=1
                 acc+=j
-    return acc/float(c)
+    return acc/float(c)/max_val(board)
 
 #The emptier the board the furthest the game is to ending. Ranges from 0 to 15
 def boardEmpty(board):
@@ -67,9 +73,9 @@ def boardEmpty(board):
         for j in i:
             if j==0:
                 c+=1
-                return c
+    return c/15.0
 
-#The more pieces with equal value lined up with no other pieces between them the better the board. Ranges from 0 to 48
+#The more pieces with equal value lined up with no other pieces between them the better the board. Ranges from 0 to 24
 def boardComb(board):
     pot=0
     for i in range(4):
@@ -87,7 +93,7 @@ def boardComb(board):
                 pot+=1
             elif board[j][i]!=last and  board[j][i]!=0:
                 last = board[j][i]
-    return pot
+    return pot/24.0
     
 
 """--------------------------------------------------------------------------------------
@@ -188,6 +194,9 @@ class Jogo2048_48(Game):
 
 
 
+"""--------------------------------------------------------------------------------------
+    Players
+--------------------------------------------------------------------------------------"""
 class Player:
     def __init__(self, name, alg):
         self.name = name
@@ -195,6 +204,16 @@ class Player:
 
     def display(self):
         print(self.name)
+
+
+
+#Jogador agora com alpha-beta
+atacante = Player("atacante",
+                  lambda game, state: alphabeta_cutoff_search_new(state, game, depth_for_all, eval_fn = num_livres))
+
+
+
+
 
 """ TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE """
 tmp = Jogo2048_48([0,1], [3,3])
