@@ -17,34 +17,37 @@ def transpose(matrix):
 def removeZeros(line):
     return list(filter( lambda x: x != 0, line))
 
-def sumStep(line):
-    if len(line) < 2:
-        return False
-
-    done = False
-    for i in range(len(line)-2, -1, -1):
-        if line[i] == line[i+1]:
-            line[i+1] *= 2
-            line[i] = 0
-            i -= 1
-            done = True
-    return done
-
 def pad(line):
     return ref[:len(ref)-len(line):] + line
 
 def sumLine(line):
     li = removeZeros(line)
 
-    while sumStep(li):
-        li = removeZeros(li)
-    return pad(li)
+    points = 0
+    for i in range(len(li)-2, -1, -1):
+        if li[i] == li[i+1]:
+            li[i+1] *= 2
+            li[i] = 0
+            points += li[i+1]
+            i -= 1
+    
+    return (pad(removeZeros(li)), points)
+
+def sumPoints( m, toReverse, toTranspose):
+    linesAndPoints = list(m)
+    board = list( map( lambda x: reverse(x[0]), linesAndPoints) if toReverse else map( lambda x: x[0], linesAndPoints))
+    if toTranspose:
+        board = transpose(board)
+    points = list( map( lambda x: x[1], linesAndPoints))
+    points = sum(points)
+
+    return (board, points)
 
 actions = {
-    "direita": lambda m: list( map( lambda l: sumLine(l), m )), 
-    "esquerda": lambda m: list( map( lambda l: reverse(sumLine(reverse(l))) , m )),
-    "cima": lambda m: transpose( map( lambda l: reverse(sumLine(reverse(l))) , transpose(m) ) ),
-    "baixo": lambda m: transpose( map( lambda l: sumLine(l) , transpose(m) ) ),
+    "direita": lambda m: sumPoints( map( lambda l: sumLine(l), m ), False, False), 
+    "esquerda": lambda m: sumPoints( map( lambda l: sumLine(reverse(l)) , m ), True, False),
+    "cima": lambda m: sumPoints( map( lambda l: sumLine(reverse(l)) , transpose(m)), True, True),
+    "baixo": lambda m: sumPoints( map( lambda l: sumLine(l) , transpose(m)), False, True),
 }
 
 
@@ -57,7 +60,8 @@ class Jogo2048State(GameState):
     """Returns a new state representing the board after the attacker player chooses a direction"""
     def __collapse(self, direction):
         try:
-            newstate = Jogo2048State(to_move="defensor", utility=0, board = actions[direction](self.board), moves=self.moves+1)
+            output = actions[direction](self.board)
+            newstate = Jogo2048State(to_move="defensor", utility = self.utility + output[1], board = output[0], moves=self.moves+1)
         except KeyError:
             raise RuntimeError("Error - invalid direction of movement" )
 
@@ -70,7 +74,7 @@ class Jogo2048State(GameState):
         if self.to_move == "atacante":
             return self.__collapse(move)
         elif self.to_move == "defensor":
-            newstate = Jogo2048State(to_move="atacante", utility=0, board = copy.deepcopy(self.board), moves=self.moves+1)
+            newstate = Jogo2048State(to_move="atacante", utility= self.utility, board = copy.deepcopy(self.board), moves=self.moves+1)
             newstate.board[int(move[0])][int(move[2])] = 2
             return newstate
         else:
@@ -266,3 +270,16 @@ hipolito2 = Player("hipolito2", hipolitoF)
 """ TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE """
 tmp = Jogo2048_48([3,2], [3,3])
 tmp.display(tmp.initial)
+
+state = tmp.result(tmp.initial, "direita")
+
+tmp.display(state)
+print("uti --> " + str(state.utility))
+
+state = tmp.result(state, "0,0")
+
+print(tmp.actions(state))
+
+state2 = tmp.result(state, "direita")
+tmp.display(state2)
+print("uti --> " + str(state2.utility))
