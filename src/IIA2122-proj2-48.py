@@ -1,5 +1,6 @@
 import copy
 from jogos import *
+from random import randint
 
 """--------------------------------------------------------------------------------------
     Helpers
@@ -265,7 +266,7 @@ def idealPos(board):
 class Player:
     def __init__(self, name, alg):
         self.name = name
-        self.alg = alg
+        self.alg = alg 
 
     def display(self):
         print(self.name)
@@ -299,7 +300,7 @@ def hipolito_48(game, state):
     moves = state.get_moves()
     states = list(map(lambda m: state.next_move(m), moves))
     max = 0
-    for i in range(1,len(states), 1):
+    for i in range(0,len(states), 1):
         if state.to_move == "atacante":
             if states[i].utility > states[max].utility:
                 max = i
@@ -310,24 +311,48 @@ def hipolito_48(game, state):
             raise RuntimeError("Invalid player")
     return moves[i]
 
-hipolito2 = Player("hipolito2", hipolito_48)
+atacante_hipolito = Player("hipolitoA", hipolito_48)
+defensor_hipolito = Player("hipolitoD", hipolito_48)
+
+
+def randomGame():
+    return Jogo2048_48([randint(0,3), randint(0,3)], [randint(0,3), randint(0,3)])
+
+def getScore( dict ):
+    return dict["score"]
+
+def faz_campeonato(listAtk, listDef, n):
+    listAtk = list( map( lambda x: {"player": x, "score": 0}, listAtk))
+    listDef = list( map( lambda x: {"player": x, "score": 0}, listDef))
+
+    for a in listAtk:
+        for d in listDef:
+            a["player"].display()
+            d["player"].display()
+            game = randomGame()
+            score = game.jogar(a["player"].alg, d["player"].alg, False)
+            print(score)
+            a["score"] += score
+            d["score"] += score
+
+    listAtk.sort(key=getScore)
+    listDef.sort(key=getScore)
+    return (listAtk, listDef)
 
 
 
 
 """ TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE """
-tmp = Jogo2048_48([3,2], [3,3])
-tmp.display(tmp.initial)
+#tmp = randomGame()
+#tmp.display(tmp.initial)
 
-state = tmp.result(tmp.initial, "direita")
+#print(tmp.jogar(atacante_obsessivo.alg, atacante_hipolito.alg, False))
 
-tmp.display(state)
-print("uti --> " + str(state.utility))
+listAtk = [atacante_hipolito, atacante_obsessivo]
+listDef = [defensor_hipolito, defensor_obsessivo]
 
-state = tmp.result(state, "0,0")
+ss = faz_campeonato(listAtk, listDef, 1)
 
-print(tmp.actions(state))
+print(ss[0])
+print(ss[1])
 
-state2 = tmp.result(state, "direita")
-tmp.display(state2)
-print("uti --> " + str(state2.utility))
