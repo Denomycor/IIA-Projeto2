@@ -408,7 +408,7 @@ for i in range(10):
     }
     listAtk.append(pla)
 
-gd = (62.37235856496093, 75.45185315644919, 71.659852621875, 51.04507922798772)
+gd = (56.291053604877234, 61.30236595508508, 71.3020012328445, 45.953013543250776)
 pld = {
     "player": Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_defesa_48(gd))),
     "score": 0,
