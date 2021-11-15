@@ -419,8 +419,8 @@ for i in range(init_pop):
 for g in range(num_gen):
     print("Generation: "+str(g))
     for j in range(len(listAtk)):
-        listAtk[i]["score"] = 0
-        listDef[i]["score"] = 0
+        listAtk[j]["score"] = 0
+        listDef[j]["score"] = 0
     lists = faz_campeonato(listAtk, listDef)
     lists = fitness(lists, num_survivors)
     writetxt(listAtk, 0)
