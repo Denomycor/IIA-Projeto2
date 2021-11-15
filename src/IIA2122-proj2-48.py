@@ -355,6 +355,14 @@ def fitness( tuple ):
     tuple[1].sort(key=lambda x: x["score"])
     return (tuple[0][0:5], tuple[1][0:5])
 
+def mutate(ent):
+    new = list(ent)
+    for i in ent:
+        if randint(0,10)>2:
+            continue
+        new[i] += [new[i]*0.05, 0-new[i]*0.05][random.randint(0,1)]
+    return tuple(new)
+
 def score(s, weight):
     return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
 
@@ -374,6 +382,13 @@ def decorator_func_defesa_48(deco):
     return func_defesa_48
 
 
+def writetxt(players, id):
+    path = 'attack.txt' if id == 0 else 'defense.txt'
+    with open(path, 'w') as file:
+        for info in players:
+            file.write('-----------------------------------------------\n')
+            file.write('Player: '+info["player"].name+' |Score: '+ str(info["score"])+' |ADN: '+str(info["adn"])+'\n')
+
 
 """--------------------------------------------------------------------------------------
     TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE
@@ -383,7 +398,7 @@ def decorator_func_defesa_48(deco):
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
 listDef = []#[defensor_obsessivo, defensor_hipolito]
 
-for i in range(15):
+for i in range(5):
     ga = generate()
     pla = {
         "player": Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))),
@@ -392,14 +407,15 @@ for i in range(15):
     }
     gd = generate()
     pld = {
-        "player": Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(gd))),
+        "player": Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_defesa_48(gd))),
         "score": 0,
         "adn": gd
     }
     listAtk.append(pla)
     listDef.append(pld)
 
-for g in range(10):
+for g in range(2):
+    print(g)
     lists = faz_campeonato(listAtk, listDef, 2)
     lists = fitness(lists)
     listAtk = lists[0]
@@ -407,19 +423,13 @@ for g in range(10):
     newAtk = []
     newDef = []
     for i in range(10):
-        newAtk.append( reproduce(listAtk[randint(0, len(listAtk))]["adn"], listAtk[randint(0, len(listAtk))]["adn"] ))
-        newDef.append( reproduce(listDef[randint(0, len(listDef))]["adn"], listDef[randint(0, len(listDef))]["adn"] ))
+        newAtk.append( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ))
+        newDef.append( reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] ))
     listAtk.append(newAtk)
     listDef.append(newDef)
-    #TODO: mutate
+    for i in range(len(listAtk)):
+        listAtk[i] = mutate(listAtk[i])
+        listDef[i] = mutate(listDef[i])
+    writetxt(listAtk, 0)
+    writetxt(listDef, 1)
 
-
-def writetxt(players, id):
-    path = 'attack.txt' if id == 0 else 'defense.txt'
-    with open(path, 'w') as file:
-        for info in players:
-            file.write('-----------------------------------------------\n')
-            file.write('Player: '+info["player"].name+' |Score: '+ str(info["score"])+' |ADN: '+str(info["adn"])+'\n')
-
-writetxt(listAtk, 0)
-writetxt(listDef, 1)
