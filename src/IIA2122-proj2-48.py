@@ -354,14 +354,14 @@ def reproduce(t1, t2):
 def fitness( tuple ):
     tuple[0].sort(key=lambda x: x["score"], reverse=True)
     tuple[1].sort(key=lambda x: x["score"])
-    return (tuple[0][0:3], tuple[1][0:3])
+    return (tuple[0][0:5], tuple[1][0:5])
 
 def mutate(ent):
     new = list(ent)
     for i in range(len(new)):
         if randint(0,10)>2:
             continue
-        new[i] += [new[i]*0.05, 0-new[i]*0.05][randint(0,1)]
+        new[i] += [-2, 2][randint(0,1)]
     return tuple(new)
 
 def score(s, weight):
@@ -391,6 +391,15 @@ def writetxt(players, id):
             file.write('Player: '+info["player"].name+' |Score: '+ str(info["score"])+' |ADN: '+str(info["adn"])+'\n')
 
 
+
+def createPlayer(prefix, gen):
+    res = {
+        "player": Player( prefix + str(gen), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(gen))),
+        "score": 0,
+        "adn": gen
+    }
+    return res
+
 """--------------------------------------------------------------------------------------
     TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE
 --------------------------------------------------------------------------------------"""
@@ -399,22 +408,12 @@ def writetxt(players, id):
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
 listDef = []#[defensor_obsessivo, defensor_hipolito]
 
-for i in range(10):
+for i in range(20):
     ga = generate()
-    pla = {
-        "player": Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))),
-        "score": 0,
-        "adn": ga
-    }
-    listAtk.append(pla)
+    listAtk.append( createPlayer( "Atk-", ga) )
 
 gd = (56.291053604877234, 61.30236595508508, 71.3020012328445, 45.953013543250776)
-pld = {
-    "player": Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_defesa_48(gd))),
-    "score": 0,
-    "adn": gd
-}
-listDef.append(pld)
+listDef.append( createPlayer( "Def-", gd) )
 
 for g in range(1000):
     print(g)
@@ -429,17 +428,8 @@ for g in range(1000):
     listDef = lists[1]
     newAtk = []
     newDef = []
-    for i in range(7):
-        ga = reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] )
-        pla = {
-            "player": Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))),
-            "score": 0,
-            "adn": ga
-        }
-        newAtk.append( pla )
+    for i in range(15):
+        ga = mutate( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ) )
+        newAtk.append( createPlayer( "Atk-", ga) )
     listAtk.extend(newAtk)
-    for i in range(len(listAtk)):
-        listAtk[i]["adn"] = mutate(listAtk[i]["adn"])
-        #listDef[i]["adn"] = mutate(listDef[i]["adn"])
-    
 
