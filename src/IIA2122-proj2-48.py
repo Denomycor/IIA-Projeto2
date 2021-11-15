@@ -360,11 +360,14 @@ def fitness( tuple, survivors ):
     return (tuple[0][0:survivors], tuple[1][0:survivors])
 
 def mutate(ent, g):
+
+    conv = 20-g/2 if 20-g/2>0 else 1
+
     new = list(ent)
     for i in range(len(new)):
-        if randint(0,10)>2:
+        if randint(0,10)>5:
             continue
-        new[i] += [randint(0,50), 0-randint(0,50)][randint(0,1)]
+        new[i] += [randint(0,30)+conv, 0-(randint(0,30)+conv)][randint(0,1)]
         new[i] %= 100
     return tuple(new)
 
