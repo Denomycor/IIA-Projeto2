@@ -394,10 +394,11 @@ for i in range(3):
 players = faz_campeonato(listAtk, listDef, 1)
 
 def writetxt(players, id):
-    with open('points.txt', 'a') as file:
+    path = 'attack.txt' if id == 0 else 'defense.txt'
+    with open(path, 'w') as file:
         for info in players[id]:
             file.write('-----------------------------------------------\n')
-            file.write('Player: '+info["player"].name+' |Score: '+ str(info["score"])+' |ADN: '+info["adn"]+'\n')
+            file.write('Player: '+info["player"].name+' |Score: '+ str(info["score"])+' |ADN: '+str(info["adn"])+'\n')
 
 writetxt(players, 0)
 writetxt(players, 1)
