@@ -402,7 +402,6 @@ for i in range(init_pop):
     gd = generate()
     listDef.append( createPlayer( "Def-", gd) )
 
-
 for g in range(num_gen):
     print(g)
     for j in range(len(listAtk)):
