@@ -223,6 +223,25 @@ def boardComb(board):
 
 #The better the disposition of the pieces on the board the better.
 def boardPos(board):
+    def calcWeight(board1, board2):
+        acc = 0
+        for i in range(4):
+            for j in range(4):
+                acc += board1 * board2
+        return acc
+    def idealPos(board):
+        flat = [0 for i in range(16)]
+        for i in range(4):
+            for j in range(4):
+                flat[i*4+j] = board[i][j]
+        flat.sort(reverse=True)
+        for i in range(4):
+            for j in range(4):
+                board[i][j] = flat[i*4+j] 
+        board[1] = reverse(board[1])
+        board[3] = reverse(board[3])
+        return board
+
     max = 0
     posWeight = [
         [16, 15, 14, 13],
@@ -243,24 +262,7 @@ def boardPos(board):
             max = curr
 
     return max/base
-def calcWeight(board1, board2):
-    acc = 0
-    for i in range(4):
-        for j in range(4):
-            acc += board1 * board2
-    return acc
-def idealPos(board):
-    flat = [0 for i in range(16)]
-    for i in range(4):
-        for j in range(4):
-            flat[i*4+j] = board[i][j]
-    flat.sort(reverse=True)
-    for i in range(4):
-        for j in range(4):
-            board[i][j] = flat[i*4+j] 
-    board[1] = reverse(board[1])
-    board[3] = reverse(board[3])
-    return board
+
     
 
 class Player:
@@ -273,8 +275,6 @@ class Player:
 
 
 """Alphabeta Players"""
-
-
 atacante = Player("atacante",
                   lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_ataque_48))
 
