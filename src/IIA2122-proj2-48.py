@@ -6,6 +6,9 @@ from jogos import *
 --------------------------------------------------------------------------------------"""
 ref = [0,0,0,0]
 
+def rotate90(board):
+    return reverse(transpose(board))
+
 def alignLeft(str, chars):
     return (" "*(chars-len(str)))+str
 
@@ -154,7 +157,7 @@ class Jogo2048_48(Game):
 """--------------------------------------------------------------------------------------
     Players
 --------------------------------------------------------------------------------------"""
-#Get the max value of the board
+#Get the max value of the board.
 def max_val(board):
     max = 2
     for i in board:
@@ -163,7 +166,7 @@ def max_val(board):
                 max = j
     return max
 
-#The highter the avg the more combined pieces are. Ranges from 2 to max_piece_value
+#The highter the avg the more combined pieces are.
 def boardAvg(board):
     c = 0
     acc = 0
@@ -174,7 +177,7 @@ def boardAvg(board):
                 acc+=j
     return acc/float(c)/max_val(board)
 
-#The emptier the board the furthest the game is to ending. Ranges from 0 to 15
+#The emptier the board the furthest the game is to ending.
 def boardEmpty(board):
     c = 0
     for i in board:
@@ -183,9 +186,7 @@ def boardEmpty(board):
                 c+=1
     return c/15.0
 
-
-
-#The more pieces with equal value lined up with no other pieces between them the better the board. Ranges from 0 to 24
+#The more pieces with equal value lined up with no other pieces between them the better the board.
 def boardComb(board):
     pot=0
     for i in range(4):
@@ -205,6 +206,47 @@ def boardComb(board):
                 last = board[j][i]
     return pot/24.0
 
+#The better the disposition of the pieces on the board the better.
+def boardPos(board):
+    max = 0
+    posWeight = [
+        [16, 15, 14, 13],
+        [ 9, 10, 11, 12],
+        [ 8,  7,  6,  5],
+        [ 1,  2,  3,  4]]
+    base = calcWeight(idealPos(board), posWeight)
+
+    for i in range(4):
+        posWeight = rotate90(posWeight)
+        curr = calcWeight(posWeight, board)
+        if curr > max:
+            max = curr
+
+        temp = reverse(posWeight)
+        curr = calcWeight(temp, board)
+        if curr > max:
+            max = curr
+
+    return max/base
+def calcWeight(board1, board2):
+    acc = 0
+    for i in range(4):
+        for j in range(4):
+            acc += board1 * board2
+    return acc
+def idealPos(board):
+    flat = [0 for i in range(16)]
+    for i in range(4):
+        for j in range(4):
+            flat[i*4+j] = board[i][j]
+    flat.sort(reverse=True)
+    for i in range(4):
+        for j in range(4):
+            board[i][j] = flat[i*4+j] 
+    board[1] = reverse(board[1])
+    board[3] = reverse(board[3])
+    return board
+    
 
 class Player:
     def __init__(self, name, alg):
