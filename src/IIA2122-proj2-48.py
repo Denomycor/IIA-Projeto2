@@ -228,9 +228,9 @@ def boardPos(board):
         acc = 0
         for i in range(4):
             for j in range(4):
-                acc += board1 * board2
+                acc += board1[i][j] * board2[i][j]
         return acc
-        
+
     def idealPos(board):
         flat = [0 for i in range(16)]
         for i in range(4):
@@ -357,7 +357,7 @@ def reproduce(t1, t2):
 
 
 def score(s, weight):
-    print(s)
+    #print(s)
     return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
 
 def decorator_func_ataque_48(deco):
@@ -391,14 +391,20 @@ listDef = [defensor_hipolito, defensor_obsessivo]
 
 
 
-for i in range(1):
+for i in range(3):
     ga = generate()
     listAtk.append(Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))))
     gd = generate()
-    listDef.append(Player( "Def-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(gd))))
+    listDef.append(Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(gd))))
 
 ss = faz_campeonato(listAtk, listDef, 1)
 
-print(ss[0])
-print(ss[1])
+def f(l):
+    l["player"].display()
+    print(l["score"])
+    print("-----------------------------------------------")
 
+for d in ss[0]:
+    f(d)
+for d in ss[1]:
+    f(d)
