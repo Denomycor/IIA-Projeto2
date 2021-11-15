@@ -423,8 +423,20 @@ for g in range(2):
     newAtk = []
     newDef = []
     for i in range(10):
-        newAtk.append( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ))
-        newDef.append( reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] ))
+        ga = reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] )
+        pla = {
+            "player": Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))),
+            "score": 0,
+            "adn": ga
+        }
+        newAtk.append( pla )
+        gd = reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] )
+        pld = {
+            "player": Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(gd))),
+            "score": 0,
+            "adn": gd
+        }
+        newDef.append( )
     listAtk.append(newAtk)
     listDef.append(newDef)
     for i in range(len(listAtk)):
