@@ -422,12 +422,12 @@ for g in range(1000):
     listDef[0]["score"] = 0
     lists = faz_campeonato(listAtk, listDef, 2)
     writetxt(listAtk, 0)
-    writetxt(listDef, 1)
+    #writetxt(listDef, 1)
     lists = fitness(lists)
     listAtk = lists[0]
     listDef = lists[1]
     newAtk = []
-    newDef = []
+    #newDef = []
     for i in range(15):
         ga = mutate( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ) )
         newAtk.append( createPlayer( "Atk-", ga) )

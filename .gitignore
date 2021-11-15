@@ -130,5 +130,5 @@ dmypy.json
 
 # Enunciado
 enunciado/
-jogos.py
-utils.py
+attack.txt
+defense.txt
