@@ -1,6 +1,6 @@
 import copy
 from jogos import *
-import random
+from random import randint
 
 """--------------------------------------------------------------------------------------
     Helpers
@@ -223,12 +223,14 @@ def boardComb(board):
 
 #The better the disposition of the pieces on the board the better.
 def boardPos(board):
+
     def calcWeight(board1, board2):
         acc = 0
         for i in range(4):
             for j in range(4):
                 acc += board1 * board2
         return acc
+        
     def idealPos(board):
         flat = [0 for i in range(16)]
         for i in range(4):
@@ -263,12 +265,11 @@ def boardPos(board):
 
     return max/base
 
-    
 
 class Player:
     def __init__(self, name, alg):
         self.name = name
-        self.alg = alg
+        self.alg = alg 
 
     def display(self):
         print(self.name)
@@ -296,7 +297,7 @@ def hipolito_48(game, state):
     moves = state.get_moves()
     states = list(map(lambda m: state.next_move(m), moves))
     max = 0
-    for i in range(1,len(states), 1):
+    for i in range(0,len(states), 1):
         if state.to_move == "atacante":
             if states[i].utility > states[max].utility:
                 max = i
@@ -310,6 +311,30 @@ def hipolito_48(game, state):
 atacante_hipolito = Player("hipolitoA", hipolito_48)
 defensor_hipolito = Player("hipolitoD", hipolito_48)
 
+
+def randomGame():
+    return Jogo2048_48([randint(0,3), randint(0,3)], [randint(0,3), randint(0,3)])
+
+def getScore( dict ):
+    return dict["score"]
+
+def faz_campeonato(listAtk, listDef, n):
+    listAtk = list( map( lambda x: {"player": x, "score": 0}, listAtk))
+    listDef = list( map( lambda x: {"player": x, "score": 0}, listDef))
+
+    for a in listAtk:
+        for d in listDef:
+            a["player"].display()
+            d["player"].display()
+            game = randomGame()
+            score = game.jogar(a["player"].alg, d["player"].alg, False)
+            print(score)
+            a["score"] += score
+            d["score"] += score
+
+    listAtk.sort(key=getScore)
+    listDef.sort(key=getScore)
+    return (listAtk, listDef)
 """--------------------------------------------------------------------------------------
     Genetic
 --------------------------------------------------------------------------------------"""
@@ -332,23 +357,13 @@ def reproduce(t1, t2):
 
 
 def score(s, weight):
-    return boardAvg(s) * weight[0] + boardComb(s) * weight[1] + boardEmpty(s) * weight[2] + boardPos(s) * weight[3]
+    print(s)
+    return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
 
 def decorator_func_ataque_48(deco):
 
     def func_ataque_48(state, player):
-        weight = deco
-    
-        moves = state.get_moves()
-        states = [state.next_move(m) for m in moves]
-        max = (0, score(states[0], weight))
-
-        for i in range(1, len(states), 1):
-            last_score = score(state[i], weight)
-            if last_score>max[1]:
-                max = (i, last_score)
-        
-        return moves[max[0]]
+        return score(state, deco)
 
     return func_ataque_48
 
@@ -356,18 +371,7 @@ def decorator_func_ataque_48(deco):
 def decorator_func_defesa_48(deco):
     
     def func_defesa_48(state, player):
-        weight = deco
-    
-        moves = state.get_moves()
-        states = [state.next_move(m) for m in moves]
-        max = (0, score(states[0], weight))
-
-        for i in range(1, len(states), 1):
-            last_score = score(state[i], weight)
-            if 0-last_score>0-max[1]:
-                max = (i, last_score)
-        
-        return moves[max[0]]
+        return score(state, deco)
     
     return func_defesa_48
 
@@ -379,15 +383,22 @@ def decorator_func_defesa_48(deco):
 tmp = Jogo2048_48([3,2], [3,3])
 tmp.display(tmp.initial)
 
-state = tmp.result(tmp.initial, "direita")
+#print(tmp.jogar(atacante_obsessivo.alg, atacante_hipolito.alg, False))
 
-tmp.display(state)
-print("uti --> " + str(state.utility))
+listAtk = [atacante_hipolito, atacante_obsessivo]
+listDef = [defensor_hipolito, defensor_obsessivo]
 
-state = tmp.result(state, "0,0")
 
-print(tmp.actions(state))
 
-state2 = tmp.result(state, "direita")
-tmp.display(state2)
-print("uti --> " + str(state2.utility))
+
+for i in range(1):
+    ga = generate()
+    listAtk.append(Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))))
+    gd = generate()
+    listDef.append(Player( "Def-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(gd))))
+
+ss = faz_campeonato(listAtk, listDef, 1)
+
+print(ss[0])
+print(ss[1])
+
