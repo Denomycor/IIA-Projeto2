@@ -1,5 +1,6 @@
 import copy
 from jogos import *
+import random
 
 """--------------------------------------------------------------------------------------
     Helpers
@@ -51,7 +52,7 @@ actions = {
     "direita": lambda m: sumPoints( map( lambda l: sumLine(l), m ), False, False), 
     "esquerda": lambda m: sumPoints( map( lambda l: sumLine(reverse(l)) , m ), True, False),
     "cima": lambda m: sumPoints( map( lambda l: sumLine(reverse(l)) , transpose(m)), True, True),
-    "baixo": lambda m: sumPoints( map( lambda l: sumLine(l) , transpose(m)), False, True),
+    "baixo": lambda m: sumPoints( map( lambda l: sumLine(l) , transpose(m)), False, True)
 }
 
 
@@ -258,14 +259,11 @@ class Player:
 
 
 """Alphabeta Players"""
-def func_ataque_48(state, player):
-    return
+
 
 atacante = Player("atacante",
                   lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_ataque_48))
 
-def func_defesa_48(state, player):
-    return
 
 defensor = Player("defensor",
                   lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_defesa_48))
@@ -276,7 +274,6 @@ def obsessivo_48(game, state):
     return state.get_moves()[0]
 
 atacante_obsessivo = Player("obsessivoA", obsessivo_48)
-
 defensor_obsessivo = Player("obsessivoD", obsessivo_48)
 
 
@@ -296,12 +293,77 @@ def hipolito_48(game, state):
             raise RuntimeError("Invalid player")
     return moves[i]
 
-hipolito2 = Player("hipolito2", hipolito_48)
+atacante_hipolito = Player("hipolitoA", hipolito_48)
+defensor_hipolito = Player("hipolitoD", hipolito_48)
+
+"""--------------------------------------------------------------------------------------
+    Genetic
+--------------------------------------------------------------------------------------"""
+
+def generate():
+    a = random.randint(0, 100)
+    b = random.randint(0, 100)
+    c = random.randint(0, 100)
+    d = random.randint(0, 100)
+    return (a,b,c,d)
+
+def reproduce(t1, t2):
+    t3 = [0,0,0,0]
+    j = (t1, t2)
+    for i in range(4):
+        t3[i] = j[random.randint(0,1)][i]
+    return tuple(t3)
+        
 
 
 
+def decorator_func_ataque_48(weight):
 
-""" TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE """
+    def func_ataque_48(state, player):
+
+        def score(s):
+            return boardAvg(s) * weight[0] + boardComb(s) * weight[1] + boardEmpty(s) * weight[2] + boardPos(s) * weight[3]
+    
+        moves = state.get_moves()
+        states = [state.next_move(m) for m in moves]
+        max = (0, score(states[0]))
+
+        for i in range(1, len(states), 1):
+            last_score = score(state[i])
+            if last_score>max[1]:
+                max = (i, last_score)
+        
+        return moves[max[0]]
+
+    return func_ataque_48
+
+
+
+def decorator_func_defesa_48(weight):
+    
+    def func_defesa_48(state, player):
+        
+        def score(s):
+            return boardAvg(s) * weight[0] + boardComb(s) * weight[1] + boardEmpty(s) * weight[2] + boardPos(s) * weight[3]
+    
+        moves = state.get_moves()
+        states = [state.next_move(m) for m in moves]
+        max = (0, score(states[0]))
+
+        for i in range(1, len(states), 1):
+            last_score = score(state[i])
+            if 0-last_score>0-max[1]:
+                max = (i, last_score)
+        
+        return moves[max[0]]
+    
+    return func_defesa_48
+
+
+
+"""--------------------------------------------------------------------------------------
+    TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE
+--------------------------------------------------------------------------------------"""
 tmp = Jogo2048_48([3,2], [3,3])
 tmp.display(tmp.initial)
 
