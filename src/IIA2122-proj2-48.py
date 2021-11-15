@@ -306,12 +306,12 @@ defensor_hipolito = Player("hipolitoD", hipolito_48)
 def randomGame():
     return Jogo2048_48([randint(0,3), randint(0,3)], [randint(0,3), randint(0,3)])
 
-def faz_campeonato(listAtk, listDef, n):
+def faz_campeonato(listAtk, listDef):
     for a in listAtk:
         for d in listDef:
-            print(a["player"].name + " vs " + d["player"].name )
             game = randomGame()
             score = game.jogar(a["player"].alg, d["player"].alg, False)
+            print(a["player"].name + " vs " + d["player"].name + " score: " + str(score))
             a["score"] += score
             d["score"] += score
 
@@ -372,9 +372,11 @@ def writetxt(players, id):
 
 
 
-def createPlayer(prefix, gen):
+def createPlayer(prefix, gen, player):
+    
+    func = decorator_func_ataque_48(gen) if player == "atacante" else decorator_func_defesa_48(gen) 
     res = {
-        "player": Player( prefix + str(gen), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(gen))),
+        "player": Player( prefix + str(gen), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = func)),
         "score": 0,
         "adn": gen
     }
@@ -398,16 +400,16 @@ num_survivors = 2
 
 for i in range(init_pop):
     ga = generate()
-    listAtk.append( createPlayer( "Atk-", ga) )
+    listAtk.append( createPlayer( "Atk-", ga, "atacante") )
     gd = generate()
-    listDef.append( createPlayer( "Def-", gd) )
+    listDef.append( createPlayer( "Def-", gd, "defesa") )
 
 for g in range(num_gen):
-    print(g)
+    print("Generation: "+str(g))
     for j in range(len(listAtk)):
         listAtk[i]["score"] = 0
-    listDef[0]["score"] = 0
-    lists = faz_campeonato(listAtk, listDef, 2)
+        listDef[i]["score"] = 0
+    lists = faz_campeonato(listAtk, listDef)
     lists = fitness(lists, num_survivors)
     writetxt(listAtk, 0)
     writetxt(listDef, 1)
@@ -417,9 +419,9 @@ for g in range(num_gen):
     newDef = []
     for i in range(num_reproduce):
         ga = mutate( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ) )
-        newAtk.append( createPlayer( "Atk("+str(g)+")-", ga) )
+        newAtk.append( createPlayer( "Atk("+str(g)+")-", ga, "atacante") )
         gd = mutate( reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] ) )
-        newAtk.append( createPlayer( "Def("+str(g)+")-", gd) )
+        newDef.append( createPlayer( "Def("+str(g)+")-", gd, "defesa") )
     listAtk.extend(newAtk)
     listDef.extend(newDef)
 
