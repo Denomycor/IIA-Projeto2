@@ -319,48 +319,41 @@ def hipolito_48(game, state):
 atacante_hipolito = Player("hipolitoA", hipolito_48)
 defensor_hipolito = Player("hipolitoD", hipolito_48)
 
-
-def randomGame():
-    return Jogo2048_48([randint(0,3), randint(0,3)], [randint(0,3), randint(0,3)])
-
-def getScore( dict ):
-    return dict["score"]
-
-def faz_campeonato(listAtk, listDef, n):
-    listAtk = list( map( lambda x: {"player": x, "score": 0}, listAtk))
-    listDef = list( map( lambda x: {"player": x, "score": 0}, listDef))
-
-    for a in listAtk:
-        for d in listDef:
-            a["player"].display()
-            d["player"].display()
-            game = randomGame()
-            score = game.jogar(a["player"].alg, d["player"].alg, False)
-            print(score)
-            a["score"] += score
-            d["score"] += score
-
-    listAtk.sort(key=getScore)
-    listDef.sort(key=getScore)
-    return (listAtk, listDef)
 """--------------------------------------------------------------------------------------
     Genetic
 --------------------------------------------------------------------------------------"""
 
+def randomGame():
+    return Jogo2048_48([randint(0,3), randint(0,3)], [randint(0,3), randint(0,3)])
+
+def faz_campeonato(listAtk, listDef, n):
+    for a in listAtk:
+        for d in listDef:
+            game = randomGame()
+            score = game.jogar(a["player"].alg, d["player"].alg, False)
+            a["score"] += score
+            d["score"] += score
+
+    return (listAtk, listDef)
+
 def generate():
-    a = random.randint(0, 100)
-    b = random.randint(0, 100)
-    c = random.randint(0, 100)
-    d = random.randint(0, 100)
+    a = randint(0, 100)
+    b = randint(0, 100)
+    c = randint(0, 100)
+    d = randint(0, 100)
     return (a,b,c,d)
 
 def reproduce(t1, t2):
     t3 = [0,0,0,0]
     j = (t1, t2)
     for i in range(4):
-        t3[i] = j[random.randint(0,1)][i]
+        t3[i] = j[randint(0,1)][i]
     return tuple(t3)
 
+def fitness( tuple ):
+    tuple[0].sort(key=lambda x: x["score"], reverse=True)
+    tuple[1].sort(key=lambda x: x["score"])
+    return (tuple[0][0:5], tuple[1][0:5])
 
 def score(s, weight):
     return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
@@ -386,35 +379,47 @@ def decorator_func_defesa_48(deco):
     TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE
 --------------------------------------------------------------------------------------"""
 
-tmp = Jogo2048_48([3,2], [3,3])
-tmp.initial.board[3][1] = 2
-tmp.initial.board[3][0] = 2
-tmp.jogar(player.alg, defensor_hipolito.alg)
 
+listAtk = []#[atacante_hipolito, atacante_obsessivo]
+listDef = []#[defensor_obsessivo, defensor_hipolito]
 
-
-#print(tmp.jogar(atacante_obsessivo.alg, atacante_hipolito.alg, False))
-
-listAtk = [atacante_hipolito, atacante_obsessivo]
-listDef = [defensor_hipolito, defensor_obsessivo]
-
-
-for i in range(3):
+for i in range(15):
     ga = generate()
-    listAtk.append(Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 5, eval_fn = decorator_func_ataque_48(ga))))
+    pla = {
+        "player": Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))),
+        "score": 0,
+        "adn": ga
+    }
     gd = generate()
-    listDef.append(Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 5, eval_fn = decorator_func_ataque_48(gd))))
+    pld = {
+        "player": Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(gd))),
+        "score": 0,
+        "adn": gd
+    }
+    listAtk.append(pla)
+    listDef.append(pld)
 
-ss = faz_campeonato(listAtk, listDef, 1)
-#ss is a tuple of lists of dictionaries
+for g in range(10):
+    lists = faz_campeonato(listAtk, listDef, 2)
+    lists = fitness(lists)
+    listAtk = lists[0]
+    listDef = lists[0]
+    newAtk = []
+    newDef = []
+    for i in range(10):
+        newAtk.append( reproduce(listAtk[randint(0, len(listAtk))]["adn"], listAtk[randint(0, len(listAtk))]["adn"] ))
+        newDef.append( reproduce(listDef[randint(0, len(listDef))]["adn"], listDef[randint(0, len(listDef))]["adn"] ))
+    listAtk.append(newAtk)
+    listDef.append(newDef)
+    #TODO: mutate
 
-players = faz_campeonato(listAtk, listDef, 1)
 
 def writetxt(players, id):
-    with open('points.txt', 'a') as file:
-        for info in players[id]:
+    path = 'attack.txt' if id == 0 else 'defense.txt'
+    with open(path, 'w') as file:
+        for info in players:
             file.write('-----------------------------------------------\n')
             file.write('Player: '+info["player"].name+' |Score: '+ str(info["score"])+' |ADN: '+str(info["adn"])+'\n')
 
-writetxt(players, 0)
-writetxt(players, 1)
+writetxt(listAtk, 0)
+writetxt(listDef, 1)
