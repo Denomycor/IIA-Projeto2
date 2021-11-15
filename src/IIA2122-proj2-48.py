@@ -243,12 +243,14 @@ def boardPos(board):
             max = curr
 
     return max/base
+
 def calcWeight(board1, board2):
     acc = 0
     for i in range(4):
         for j in range(4):
-            acc += board1 * board2
+            acc += board1[i][j] * board2[i][j]
     return acc
+
 def idealPos(board):
     flat = [0 for i in range(16)]
     for i in range(4):
@@ -356,23 +358,13 @@ def reproduce(t1, t2):
 
 
 def score(s, weight):
-    return boardAvg(s) * weight[0] + boardComb(s) * weight[1] + boardEmpty(s) * weight[2] + boardPos(s) * weight[3]
+    print(s)
+    return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
 
 def decorator_func_ataque_48(deco):
 
     def func_ataque_48(state, player):
-        weight = deco
-    
-        moves = state.get_moves()
-        states = [state.next_move(m) for m in moves]
-        max = (0, score(states[0], weight))
-
-        for i in range(1, len(states), 1):
-            last_score = score(state[i], weight)
-            if last_score>max[1]:
-                max = (i, last_score)
-        
-        return moves[max[0]]
+        return score(state, deco)
 
     return func_ataque_48
 
@@ -380,18 +372,7 @@ def decorator_func_ataque_48(deco):
 def decorator_func_defesa_48(deco):
     
     def func_defesa_48(state, player):
-        weight = deco
-    
-        moves = state.get_moves()
-        states = [state.next_move(m) for m in moves]
-        max = (0, score(states[0], weight))
-
-        for i in range(1, len(states), 1):
-            last_score = score(state[i], weight)
-            if 0-last_score>0-max[1]:
-                max = (i, last_score)
-        
-        return moves[max[0]]
+        return score(state, deco)
     
     return func_defesa_48
 
@@ -407,6 +388,15 @@ tmp.display(tmp.initial)
 
 listAtk = [atacante_hipolito, atacante_obsessivo]
 listDef = [defensor_hipolito, defensor_obsessivo]
+
+
+
+
+for i in range(1):
+    ga = generate()
+    listAtk.append(Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))))
+    gd = generate()
+    listDef.append(Player( "Def-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(gd))))
 
 ss = faz_campeonato(listAtk, listDef, 1)
 
