@@ -310,10 +310,10 @@ def faz_campeonato(listAtk, listDef):
     for a in listAtk:
         for d in listDef:
             game = randomGame()
-            score = game.jogar(a["player"].alg, d["player"].alg, False)
-            print(a["player"].name + " vs " + d["player"].name + " score: " + str(score))
+            score = game.jogar(a["player"].alg, d.alg, False)
+            print(a["player"].name + " vs " + d.name + " score: " + str(score))
             a["score"] += score
-            d["score"] += score
+            #d["score"] += score
 
     return (listAtk, listDef)
 
@@ -333,7 +333,7 @@ def reproduce(t1, t2):
 
 def fitness( tuple, survivors ):
     tuple[0].sort(key=lambda x: x["score"], reverse=True)
-    tuple[1].sort(key=lambda x: x["score"])
+    #tuple[1].sort(key=lambda x: x["score"])
     return (tuple[0][0:survivors], tuple[1][0:survivors])
 
 def mutate(ent, g):
@@ -400,40 +400,41 @@ def createPlayer(prefix, gen, player):
 
 
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
-listDef = []#[defensor_obsessivo, defensor_hipolito]
+listDef = [defensor_hipolito]#[defensor_obsessivo, defensor_hipolito]
 
 
 
-init_pop = 6
+init_pop = 10
 num_gen = 1000
-num_reproduce = 4
+num_reproduce = 8
 num_survivors = 2
 
 
 for i in range(init_pop):
     ga = generate()
     listAtk.append( createPlayer( "Atk-", ga, "atacante") )
-    gd = generate()
-    listDef.append( createPlayer( "Def-", gd, "defesa") )
+    #gd = generate()
+    #listDef.append( createPlayer( "Def-", gd, "defesa") )
 
 for g in range(num_gen):
     print("Generation: "+str(g))
     for j in range(len(listAtk)):
-        listAtk[i]["score"] = 0
-        listDef[i]["score"] = 0
+        listAtk[j]["score"] = 0
+        #listDef[i]["score"] = 0
     lists = faz_campeonato(listAtk, listDef)
     lists = fitness(lists, num_survivors)
+        
     writetxt(listAtk, 0)
-    writetxt(listDef, 1)
+    #writetxt(listDef, 1)
     listAtk = lists[0]
     listDef = lists[1]
     newAtk = []
-    newDef = []
+    #newDef = []
     for i in range(num_reproduce):
         ga = mutate( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ), g)
         newAtk.append( createPlayer( "Atk("+str(g)+")-", ga, "atacante") )
-        gd = mutate( reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] ), g )
-        newDef.append( createPlayer( "Def("+str(g)+")-", gd, "defesa") )
+        #gd = mutate( reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] ), g )
+        #newDef.append( createPlayer( "Def("+str(g)+")-", gd, "defesa") )
     listAtk.extend(newAtk)
-    listDef.extend(newDef)
+    #listDef.extend(newDef)
 
