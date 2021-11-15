@@ -166,11 +166,8 @@ class Jogo2048_48(Game):
 
 
 
-
-
-
 """--------------------------------------------------------------------------------------
-    Players
+    Utility Parameters
 --------------------------------------------------------------------------------------"""
 #Get the max value of the board.
 def max_val(board):
@@ -223,6 +220,27 @@ def boardComb(board):
 
 #The better the disposition of the pieces on the board the better.
 def boardPos(board):
+
+    def calcWeight(board1, board2):
+        acc = 0
+        for i in range(4):
+            for j in range(4):
+                acc += board1[i][j] * board2[i][j]
+        return acc
+
+    def idealPos(board):
+        flat = [0 for i in range(16)]
+        for i in range(4):
+            for j in range(4):
+                flat[i*4+j] = board[i][j]
+        flat.sort(reverse=True)
+        for i in range(4):
+            for j in range(4):
+                board[i][j] = flat[i*4+j] 
+        board[1] = reverse(board[1])
+        board[3] = reverse(board[3])
+        return board
+
     max = 0
     posWeight = [
         [16, 15, 14, 13],
@@ -244,27 +262,9 @@ def boardPos(board):
 
     return max/base
 
-def calcWeight(board1, board2):
-    acc = 0
-    for i in range(4):
-        for j in range(4):
-            acc += board1[i][j] * board2[i][j]
-    return acc
-
-def idealPos(board):
-    flat = [0 for i in range(16)]
-    for i in range(4):
-        for j in range(4):
-            flat[i*4+j] = board[i][j]
-    flat.sort(reverse=True)
-    for i in range(4):
-        for j in range(4):
-            board[i][j] = flat[i*4+j] 
-    board[1] = reverse(board[1])
-    board[3] = reverse(board[3])
-    return board
-    
-
+"""--------------------------------------------------------------------------------------
+    Players
+--------------------------------------------------------------------------------------"""
 class Player:
     def __init__(self, name, alg):
         self.name = name
@@ -275,8 +275,6 @@ class Player:
 
 
 """Alphabeta Players"""
-
-
 atacante = Player("atacante",
                   lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_ataque_48))
 
@@ -349,7 +347,7 @@ def fitness( tuple ):
     return (tuple[0][0:5], tuple[1][0:5])
 
 def score(s, weight):
-    print(s)
+    #print(s)
     return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
 
 def decorator_func_ataque_48(deco):
@@ -398,9 +396,24 @@ for i in range(15):
 for g in range(10):
     lists = faz_campeonato(listAtk, listDef, 2)
     lists = fitness(lists)
+    listAtk = lists[0]
+    listDef = lists[0]
     newAtk = []
     newDef = []
     for i in range(10):
         newAtk.append( reproduce(listAtk[randint(0, len(listAtk))]["adn"], listAtk[randint(0, len(listAtk))]["adn"] ))
         newDef.append( reproduce(listDef[randint(0, len(listDef))]["adn"], listDef[randint(0, len(listDef))]["adn"] ))
+    listAtk.append(newAtk)
+    listDef.append(newDef)
     #TODO: mutate
+
+
+def writetxt(players, id):
+    path = 'attack.txt' if id == 0 else 'defense.txt'
+    with open(path, 'w') as file:
+        for info in players:
+            file.write('-----------------------------------------------\n')
+            file.write('Player: '+info["player"].name+' |Score: '+ str(info["score"])+' |ADN: '+str(info["adn"])+'\n')
+
+writetxt(listAtk, 0)
+writetxt(listDef, 1)
