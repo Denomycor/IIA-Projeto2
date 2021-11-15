@@ -329,6 +329,7 @@ def randomGame():
 def faz_campeonato(listAtk, listDef, n):
     for a in listAtk:
         for d in listDef:
+            print(a["player"].name + " vs " + d["player"].name )
             game = randomGame()
             score = game.jogar(a["player"].alg, d["player"].alg, False)
             a["score"] += score
@@ -398,7 +399,7 @@ def writetxt(players, id):
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
 listDef = []#[defensor_obsessivo, defensor_hipolito]
 
-for i in range(15):
+for i in range(10):
     ga = generate()
     pla = {
         "player": Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))),
@@ -419,7 +420,7 @@ for g in range(1000):
     print(g)
     for j in range(len(listAtk)):
         listAtk[i]["score"] = 0
-        listDef[i]["score"] = 0
+    listDef[0]["score"] = 0
     lists = faz_campeonato(listAtk, listDef, 2)
     writetxt(listAtk, 0)
     writetxt(listDef, 1)
@@ -428,7 +429,7 @@ for g in range(1000):
     listDef = lists[1]
     newAtk = []
     newDef = []
-    for i in range(4):
+    for i in range(7):
         ga = reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] )
         pla = {
             "player": Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))),
@@ -439,6 +440,6 @@ for g in range(1000):
     listAtk.extend(newAtk)
     for i in range(len(listAtk)):
         listAtk[i]["adn"] = mutate(listAtk[i]["adn"])
-        listDef[i]["adn"] = mutate(listDef[i]["adn"])
+        #listDef[i]["adn"] = mutate(listDef[i]["adn"])
     
 
