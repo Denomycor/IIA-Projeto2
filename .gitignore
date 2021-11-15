@@ -130,3 +130,6 @@ dmypy.json
 
 # Enunciado
 enunciado/
+
+attack.txt
+defense.txt
