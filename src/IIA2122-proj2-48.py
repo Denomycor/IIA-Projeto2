@@ -130,28 +130,42 @@ class Jogo2048_48(Game):
         self.initial.board[pos2[0]][pos2[1]]=2
         self.points = 0
 
+    """Return a list of the allowable moves at this point."""
     def actions(self, state):
         return state.get_moves()
 
+    """Return the state that results from making a move from a state."""
     def result(self, state, move):
         return state.next_move(move)
+
+    def resultActions(self, state, moves):
+        finalState = None
+        for i in moves:
+            finalState = state.next_move(i)
+        return finalState
 
     def utility(self, state, player):
         #utility is the score on a current state, equal to both players
         return state.utility 
 
+    """Return True if this is a final state for the game."""
     def terminal_test(self, state):
         return not (state.to_move == "defensor" or bool(len(state.get_moves())))
 
+    """Return the player whose move it is in this state."""
     def to_move(self, state):
         return state.to_move
 
+    """Print or otherwise display the state."""
     def display(self, state):
         state.display()
 
     def jogar(self, jogador1, jogador2, verbose=True):
         #TODO
         return super().jogar(jogador1, jogador2, verbose)
+
+
+
 
 
 
