@@ -353,14 +353,14 @@ def reproduce(t1, t2):
 def fitness( tuple ):
     tuple[0].sort(key=lambda x: x["score"], reverse=True)
     tuple[1].sort(key=lambda x: x["score"])
-    return (tuple[0][0:5], tuple[1][0:5])
+    return (tuple[0][0:3], tuple[1][0:3])
 
 def mutate(ent):
     new = list(ent)
-    for i in ent:
+    for i in range(len(new)):
         if randint(0,10)>2:
             continue
-        new[i] += [new[i]*0.05, 0-new[i]*0.05][random.randint(0,1)]
+        new[i] += [new[i]*0.05, 0-new[i]*0.05][randint(0,1)]
     return tuple(new)
 
 def score(s, weight):
@@ -398,7 +398,7 @@ def writetxt(players, id):
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
 listDef = []#[defensor_obsessivo, defensor_hipolito]
 
-for i in range(5):
+for i in range(7):
     ga = generate()
     pla = {
         "player": Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))),
@@ -414,15 +414,20 @@ for i in range(5):
     listAtk.append(pla)
     listDef.append(pld)
 
-for g in range(2):
+for g in range(1000):
     print(g)
+    for j in range(len(listAtk)):
+        listAtk[i]["score"] = 0
+        listDef[i]["score"] = 0
     lists = faz_campeonato(listAtk, listDef, 2)
+    writetxt(listAtk, 0)
+    writetxt(listDef, 1)
     lists = fitness(lists)
     listAtk = lists[0]
-    listDef = lists[0]
+    listDef = lists[1]
     newAtk = []
     newDef = []
-    for i in range(10):
+    for i in range(4):
         ga = reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] )
         pla = {
             "player": Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))),
@@ -436,12 +441,11 @@ for g in range(2):
             "score": 0,
             "adn": gd
         }
-        newDef.append( )
-    listAtk.append(newAtk)
-    listDef.append(newDef)
+        newDef.append( pld )
+    listAtk.extend(newAtk)
+    listDef.extend(newDef)
     for i in range(len(listAtk)):
-        listAtk[i] = mutate(listAtk[i])
-        listDef[i] = mutate(listDef[i])
-    writetxt(listAtk, 0)
-    writetxt(listDef, 1)
+        listAtk[i]["adn"] = mutate(listAtk[i]["adn"])
+        listDef[i]["adn"] = mutate(listDef[i]["adn"])
+    
 
