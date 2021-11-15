@@ -317,19 +317,20 @@ def reproduce(t1, t2):
 
 
 
-def decorator_func_ataque_48(weight):
+def score(s, weight):
+    return boardAvg(s) * weight[0] + boardComb(s) * weight[1] + boardEmpty(s) * weight[2] + boardPos(s) * weight[3]
+
+def decorator_func_ataque_48(deco):
 
     def func_ataque_48(state, player):
-
-        def score(s):
-            return boardAvg(s) * weight[0] + boardComb(s) * weight[1] + boardEmpty(s) * weight[2] + boardPos(s) * weight[3]
+        weight = deco
     
         moves = state.get_moves()
         states = [state.next_move(m) for m in moves]
-        max = (0, score(states[0]))
+        max = (0, score(states[0], weight))
 
         for i in range(1, len(states), 1):
-            last_score = score(state[i])
+            last_score = score(state[i], weight)
             if last_score>max[1]:
                 max = (i, last_score)
         
@@ -338,20 +339,17 @@ def decorator_func_ataque_48(weight):
     return func_ataque_48
 
 
-
-def decorator_func_defesa_48(weight):
+def decorator_func_defesa_48(deco):
     
     def func_defesa_48(state, player):
-        
-        def score(s):
-            return boardAvg(s) * weight[0] + boardComb(s) * weight[1] + boardEmpty(s) * weight[2] + boardPos(s) * weight[3]
+        weight = deco
     
         moves = state.get_moves()
         states = [state.next_move(m) for m in moves]
-        max = (0, score(states[0]))
+        max = (0, score(states[0], weight))
 
         for i in range(1, len(states), 1):
-            last_score = score(state[i])
+            last_score = score(state[i], weight)
             if 0-last_score>0-max[1]:
                 max = (i, last_score)
         
