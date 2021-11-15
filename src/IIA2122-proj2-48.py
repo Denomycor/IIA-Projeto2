@@ -336,12 +336,24 @@ def fitness( tuple, survivors ):
     tuple[1].sort(key=lambda x: x["score"])
     return (tuple[0][0:survivors], tuple[1][0:survivors])
 
-def mutate(ent):
+def mutate(ent, g):
+    fac=0
+    if g<10:
+        fac = 3
+    elif g<20:
+        fac = 2
+    elif g<30:
+        fac = 1
+    elif g<40:
+        fac = 0.5
+    elif g<50:
+        fac = 0.1
+
     new = list(ent)
     for i in range(len(new)):
         if randint(0,10)>2:
             continue
-        new[i] += [-2, 2][randint(0,1)]
+        new[i] += [-fac, fac][randint(0,1)]
     return tuple(new)
 
 def score(s, weight):
@@ -418,9 +430,9 @@ for g in range(num_gen):
     newAtk = []
     newDef = []
     for i in range(num_reproduce):
-        ga = mutate( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ) )
+        ga = mutate( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ), g)
         newAtk.append( createPlayer( "Atk("+str(g)+")-", ga, "atacante") )
-        gd = mutate( reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] ) )
+        gd = mutate( reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] ), g )
         newDef.append( createPlayer( "Def("+str(g)+")-", gd, "defesa") )
     listAtk.extend(newAtk)
     listDef.extend(newDef)
