@@ -166,11 +166,8 @@ class Jogo2048_48(Game):
 
 
 
-
-
-
 """--------------------------------------------------------------------------------------
-    Players
+    Utility Parameters
 --------------------------------------------------------------------------------------"""
 #Get the max value of the board.
 def max_val(board):
@@ -265,7 +262,9 @@ def boardPos(board):
 
     return max/base
 
-
+"""--------------------------------------------------------------------------------------
+    Players
+--------------------------------------------------------------------------------------"""
 class Player:
     def __init__(self, name, alg):
         self.name = name
@@ -352,9 +351,6 @@ def reproduce(t1, t2):
     for i in range(4):
         t3[i] = j[random.randint(0,1)][i]
     return tuple(t3)
-        
-
-
 
 def score(s, weight):
     #print(s)
@@ -389,22 +385,19 @@ listAtk = [atacante_hipolito, atacante_obsessivo]
 listDef = [defensor_hipolito, defensor_obsessivo]
 
 
-
-
 for i in range(3):
     ga = generate()
     listAtk.append(Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))))
     gd = generate()
     listDef.append(Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(gd))))
 
-ss = faz_campeonato(listAtk, listDef, 1)
+players = faz_campeonato(listAtk, listDef, 1)
 
-def f(l):
-    l["player"].display()
-    print(l["score"])
-    print("-----------------------------------------------")
+def writetxt(players, id):
+    with open('points.txt', 'a') as file:
+        for info in players[id]:
+            file.write('-----------------------------------------------\n')
+            file.write('Player: '+info["player"].name+' |Score: '+ str(info["score"])+' |ADN: '+info["adn"]+'\n')
 
-for d in ss[0]:
-    f(d)
-for d in ss[1]:
-    f(d)
+writetxt(players, 0)
+writetxt(players, 1)
