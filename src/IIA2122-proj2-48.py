@@ -169,25 +169,19 @@ class Jogo2048_48(Game):
 """--------------------------------------------------------------------------------------
     Eval Parameters
 --------------------------------------------------------------------------------------"""
-#Get the max value of the board.
-def max_val(board):
-    max = 2
-    for i in board:
-        for j in i:
-            if j>max:
-                max = j
-    return max
-
 #The highter the avg the more combined pieces are.
 def boardAvg(board):
     c = 0
     acc = 0
+    max = 2
     for i in board:
         for j in i:
             if(j!=0):
                 c+=1
                 acc+=j
-    return acc/float(c)/max_val(board)
+                if j>max:
+                    max = j
+    return acc/float(c)/max
 
 #The emptier the board the furthest the game is to ending.
 def boardEmpty(board):
@@ -202,20 +196,17 @@ def boardEmpty(board):
 def boardComb(board):
     pot=0
     for i in range(4):
-        last = board[i][0]
+        lastH = board[i][0]
+        lastV = board[0][i]
         for j in range(1, 4, 1):
-            if board[i][j] == last:
+            if board[i][j] == lastH:
                 pot+=1
-            elif board[i][j]!=last and  board[i][j]!=0:
-                last = board[i][j]
-
-    for i in range(4):
-        last = board[0][i]
-        for j in range(1, 4, 1):
-            if board[j][i] == last:
+            elif board[i][j]!=lastH and  board[i][j]!=0:
+                lastH = board[i][j]
+            if board[j][i] == lastV:
                 pot+=1
-            elif board[j][i]!=last and  board[j][i]!=0:
-                last = board[j][i]
+            elif board[j][i]!=lastV and  board[j][i]!=0:
+                lastV = board[j][i]
     return pot/24.0
 
 #The better the disposition of the pieces on the board the better.
@@ -229,19 +220,17 @@ def boardPos(board):
         return acc
 
     def idealPos(board):
-        flat = [0 for i in range(16)]
-        for i in range(4):
-            for j in range(4):
-                flat[i*4+j] = board[i][j]
+        flat = [item for row in board for item in row]
         flat.sort(reverse=True)
-        for i in range(4):
-            for j in range(4):
-                board[i][j] = flat[i*4+j] 
-        board[1] = reverse(board[1])
-        board[3] = reverse(board[3])
-        return board
 
-    max = 0
+        result = []
+        for i in range(4):
+            result.append(flat[i*4:i*4+4])
+
+        result[1] = reverse(result[1])
+        result[3] = reverse(result[3])
+        return result
+
     posWeight = [
         [16, 15, 14, 13],
         [ 9, 10, 11, 12],
@@ -249,18 +238,9 @@ def boardPos(board):
         [ 1,  2,  3,  4]]
     base = calcWeight(idealPos(board), posWeight)
 
-    for i in range(4):
-        posWeight = rotate90(posWeight)
-        curr = calcWeight(posWeight, board)
-        if curr > max:
-            max = curr
+    curr = calcWeight(posWeight, board)
 
-        temp = reverse(posWeight)
-        curr = calcWeight(temp, board)
-        if curr > max:
-            max = curr
-
-    return max/base
+    return curr/base
 
 """--------------------------------------------------------------------------------------
     Players
@@ -351,10 +331,10 @@ def reproduce(t1, t2):
         t3[i] = j[randint(0,1)][i]
     return tuple(t3)
 
-def fitness( tuple ):
+def fitness( tuple, survivors ):
     tuple[0].sort(key=lambda x: x["score"], reverse=True)
     tuple[1].sort(key=lambda x: x["score"])
-    return (tuple[0][0:5], tuple[1][0:5])
+    return (tuple[0][0:survivors], tuple[1][0:survivors])
 
 def mutate(ent):
     new = list(ent)
@@ -408,28 +388,38 @@ def createPlayer(prefix, gen):
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
 listDef = []#[defensor_obsessivo, defensor_hipolito]
 
-for i in range(20):
+
+
+init_pop = 6
+num_gen = 1000
+num_reproduce = 4
+num_survivors = 2
+
+
+for i in range(init_pop):
     ga = generate()
     listAtk.append( createPlayer( "Atk-", ga) )
+    gd = generate()
+    listDef.append( createPlayer( "Def-", gd) )
 
-gd = (56.291053604877234, 61.30236595508508, 71.3020012328445, 45.953013543250776)
-listDef.append( createPlayer( "Def-", gd) )
-
-for g in range(1000):
+for g in range(num_gen):
     print(g)
     for j in range(len(listAtk)):
         listAtk[i]["score"] = 0
     listDef[0]["score"] = 0
     lists = faz_campeonato(listAtk, listDef, 2)
+    lists = fitness(lists, num_survivors)
     writetxt(listAtk, 0)
-    #writetxt(listDef, 1)
-    lists = fitness(lists)
+    writetxt(listDef, 1)
     listAtk = lists[0]
     listDef = lists[1]
     newAtk = []
-    #newDef = []
-    for i in range(15):
+    newDef = []
+    for i in range(num_reproduce):
         ga = mutate( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ) )
-        newAtk.append( createPlayer( "Atk-", ga) )
+        newAtk.append( createPlayer( "Atk("+str(g)+")-", ga) )
+        gd = mutate( reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] ) )
+        newAtk.append( createPlayer( "Def("+str(g)+")-", gd) )
     listAtk.extend(newAtk)
+    listDef.extend(newDef)
 
