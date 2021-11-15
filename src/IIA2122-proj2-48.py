@@ -166,9 +166,8 @@ class Jogo2048_48(Game):
 
 
 
-
 """--------------------------------------------------------------------------------------
-    Players
+    Eval Parameters
 --------------------------------------------------------------------------------------"""
 #Get the max value of the board.
 def max_val(board):
@@ -263,7 +262,9 @@ def boardPos(board):
 
     return max/base
 
-
+"""--------------------------------------------------------------------------------------
+    Players
+--------------------------------------------------------------------------------------"""
 class Player:
     def __init__(self, name, alg):
         self.name = name
@@ -359,7 +360,6 @@ def reproduce(t1, t2):
     for i in range(4):
         t3[i] = j[random.randint(0,1)][i]
     return tuple(t3)
-        
 
 
 def score(s, weight):
@@ -393,10 +393,6 @@ tmp.jogar(player.alg, defensor_hipolito.alg)
 
 
 
-
-
-
-
 #print(tmp.jogar(atacante_obsessivo.alg, atacante_hipolito.alg, False))
 
 listAtk = [atacante_hipolito, atacante_obsessivo]
@@ -411,3 +407,14 @@ for i in range(3):
 
 ss = faz_campeonato(listAtk, listDef, 1)
 #ss is a tuple of lists of dictionaries
+
+players = faz_campeonato(listAtk, listDef, 1)
+
+def writetxt(players, id):
+    with open('points.txt', 'a') as file:
+        for info in players[id]:
+            file.write('-----------------------------------------------\n')
+            file.write('Player: '+info["player"].name+' |Score: '+ str(info["score"])+' |ADN: '+str(info["adn"])+'\n')
+
+writetxt(players, 0)
+writetxt(players, 1)
