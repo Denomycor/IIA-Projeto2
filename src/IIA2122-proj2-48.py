@@ -254,6 +254,29 @@ class Player:
         print(self.name)
 
 
+
+def score(s, weight):
+    return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
+
+def decorator_func_ataque_48(deco):
+
+    def func_ataque_48(state, player):
+        return score(state, deco)
+
+    return func_ataque_48
+
+def decorator_func_defesa_48(deco):
+    
+    def func_defesa_48(state, player):
+        return score(state, deco)
+    
+    return func_defesa_48
+
+
+#func_ataque_48 = decorator_func_ataque_48(weight)
+#func_defesa_48 = decorator_func_defesa_48(weight)
+
+
 """Alphabeta Players"""
 atacante = Player("atacante",
                   lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_ataque_48))
@@ -337,42 +360,14 @@ def fitness( tuple, survivors ):
     return (tuple[0][0:survivors], tuple[1][0:survivors])
 
 def mutate(ent, g):
-    fac=0
-    if g<10:
-        fac = 3
-    elif g<20:
-        fac = 2
-    elif g<30:
-        fac = 1
-    elif g<40:
-        fac = 0.5
-    elif g<50:
-        fac = 0.1
-
     new = list(ent)
     for i in range(len(new)):
         if randint(0,10)>2:
             continue
-        new[i] += [-fac, fac][randint(0,1)]
+        new[i] += [randint(0,50), 0-randint(0,50)][randint(0,1)]
+        new[i] %= 100
     return tuple(new)
 
-def score(s, weight):
-    return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
-
-def decorator_func_ataque_48(deco):
-
-    def func_ataque_48(state, player):
-        return score(state, deco)
-
-    return func_ataque_48
-
-
-def decorator_func_defesa_48(deco):
-    
-    def func_defesa_48(state, player):
-        return score(state, deco)
-    
-    return func_defesa_48
 
 
 def writetxt(players, id):
@@ -404,10 +399,10 @@ listDef = []#[defensor_obsessivo, defensor_hipolito]
 
 
 
-init_pop = 6
+init_pop = 3
 num_gen = 1000
-num_reproduce = 4
-num_survivors = 2
+num_reproduce = 2
+num_survivors = 1
 
 
 for i in range(init_pop):
@@ -419,8 +414,8 @@ for i in range(init_pop):
 for g in range(num_gen):
     print("Generation: "+str(g))
     for j in range(len(listAtk)):
-        listAtk[i]["score"] = 0
-        listDef[i]["score"] = 0
+        listAtk[j]["score"] = 0
+        listDef[j]["score"] = 0
     lists = faz_campeonato(listAtk, listDef)
     lists = fitness(lists, num_survivors)
     writetxt(listAtk, 0)
