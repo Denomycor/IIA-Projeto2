@@ -398,21 +398,22 @@ def writetxt(players, id):
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
 listDef = []#[defensor_obsessivo, defensor_hipolito]
 
-for i in range(5):
+for i in range(15):
     ga = generate()
     pla = {
         "player": Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))),
         "score": 0,
         "adn": ga
     }
-    gd = generate()
-    pld = {
-        "player": Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_defesa_48(gd))),
-        "score": 0,
-        "adn": gd
-    }
     listAtk.append(pla)
-    listDef.append(pld)
+
+gd = (62.37235856496093, 75.45185315644919, 71.659852621875, 51.04507922798772)
+pld = {
+    "player": Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_defesa_48(gd))),
+    "score": 0,
+    "adn": gd
+}
+listDef.append(pld)
 
 for g in range(2):
     print(g)
@@ -430,13 +431,6 @@ for g in range(2):
             "adn": ga
         }
         newAtk.append( pla )
-        gd = reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] )
-        pld = {
-            "player": Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(gd))),
-            "score": 0,
-            "adn": gd
-        }
-        newDef.append( )
     listAtk.append(newAtk)
     listDef.append(newDef)
     for i in range(len(listAtk)):
