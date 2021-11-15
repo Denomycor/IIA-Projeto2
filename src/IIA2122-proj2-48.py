@@ -1,11 +1,13 @@
 import copy
-from functools import reduce
 from jogos import *
 
 """--------------------------------------------------------------------------------------
     Helpers
 --------------------------------------------------------------------------------------"""
 ref = [0,0,0,0]
+
+def rotate90(board):
+    return reverse(transpose(board))
 
 def alignLeft(str, chars):
     return (" "*(chars-len(str)))+str
@@ -76,7 +78,7 @@ class Jogo2048State(GameState):
         if self.to_move == "atacante":
             return self.__collapse(move)
         elif self.to_move == "defensor":
-            newstate = Jogo2048State(to_move="atacante", utility= self.utility, board = copy.deepcopy(self.board), moves=self.moves+1)
+            newstate = Jogo2048State(to_move="atacante", utility = self.utility, board = copy.deepcopy(self.board), moves=self.moves+1)
             newstate.board[int(move[0])][int(move[2])] = 2
             return newstate
         else:
@@ -103,10 +105,10 @@ class Jogo2048State(GameState):
     """Returns all valid moves for the state"""
     def get_moves(self):
         if self.to_move == "atacante":
-            return [ a for a in ["cima", "direita", "baixo", "esquerda"] if self.__collapse(a).board != self.board ]
+            return [ a for a in ["cima", "esquerda", "direita", "baixo"] if self.__collapse(a).board != self.board ]
         if self.to_move == "defensor":
             res = []
-            for i in range(3, -1, -1):
+            for i in range(4):
                 for j in range(4):
                     if self.board[i][j] == 0:
                         res.append(str(i)+","+str(j))
@@ -122,7 +124,6 @@ class Jogo2048State(GameState):
 class Jogo2048_48(Game):
 
     def __init__(self, pos1, pos2):
-         #Board is a list of lists 4*4 which stores the board pieces
         self.initial = Jogo2048State(to_move = "atacante", utility = 0, board = [ [ 0 for j in range(4)] for i in range(4)], moves = 0)
         self.initial.board[pos1[0]][pos1[1]]=2
         self.initial.board[pos2[0]][pos2[1]]=2
@@ -170,7 +171,7 @@ class Jogo2048_48(Game):
 """--------------------------------------------------------------------------------------
     Players
 --------------------------------------------------------------------------------------"""
-#Get the max value of the board
+#Get the max value of the board.
 def max_val(board):
     max = 2
     for i in board:
@@ -179,7 +180,7 @@ def max_val(board):
                 max = j
     return max
 
-#The highter the avg the more combined pieces are. Ranges from 2 to max_piece_value
+#The highter the avg the more combined pieces are.
 def boardAvg(board):
     c = 0
     acc = 0
@@ -190,7 +191,7 @@ def boardAvg(board):
                 acc+=j
     return acc/float(c)/max_val(board)
 
-#The emptier the board the furthest the game is to ending. Ranges from 0 to 15
+#The emptier the board the furthest the game is to ending.
 def boardEmpty(board):
     c = 0
     for i in board:
@@ -199,7 +200,7 @@ def boardEmpty(board):
                 c+=1
     return c/15.0
 
-#The more pieces with equal value lined up with no other pieces between them the better the board. Ranges from 0 to 24
+#The more pieces with equal value lined up with no other pieces between them the better the board.
 def boardComb(board):
     pot=0
     for i in range(4):
@@ -218,6 +219,47 @@ def boardComb(board):
             elif board[j][i]!=last and  board[j][i]!=0:
                 last = board[j][i]
     return pot/24.0
+
+#The better the disposition of the pieces on the board the better.
+def boardPos(board):
+    max = 0
+    posWeight = [
+        [16, 15, 14, 13],
+        [ 9, 10, 11, 12],
+        [ 8,  7,  6,  5],
+        [ 1,  2,  3,  4]]
+    base = calcWeight(idealPos(board), posWeight)
+
+    for i in range(4):
+        posWeight = rotate90(posWeight)
+        curr = calcWeight(posWeight, board)
+        if curr > max:
+            max = curr
+
+        temp = reverse(posWeight)
+        curr = calcWeight(temp, board)
+        if curr > max:
+            max = curr
+
+    return max/base
+def calcWeight(board1, board2):
+    acc = 0
+    for i in range(4):
+        for j in range(4):
+            acc += board1 * board2
+    return acc
+def idealPos(board):
+    flat = [0 for i in range(16)]
+    for i in range(4):
+        for j in range(4):
+            flat[i*4+j] = board[i][j]
+    flat.sort(reverse=True)
+    for i in range(4):
+        for j in range(4):
+            board[i][j] = flat[i*4+j] 
+    board[1] = reverse(board[1])
+    board[3] = reverse(board[3])
+    return board
     
 
 class Player:
@@ -228,57 +270,47 @@ class Player:
     def display(self):
         print(self.name)
 
-def eval_attacker(state, player):
+
+"""Alphabeta Players"""
+def func_ataque_48(state, player):
     return
 
 atacante = Player("atacante",
-                  lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = eval_attacker))
+                  lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_ataque_48))
 
-def eval_defender(state, player):
+def func_defesa_48(state, player):
     return
 
 defensor = Player("defensor",
-                  lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = eval_defender))
+                  lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_defesa_48))
 
 
+"""Obsessive Players"""
+def obsessivo_48(game, state):
+    return state.get_moves()[0]
+
+atacante_obsessivo = Player("obsessivoA", obsessivo_48)
+
+defensor_obsessivo = Player("obsessivoD", obsessivo_48)
 
 
-# Does hipolito algorithm uses alphabeta or not?
-
-def eval_hipolito(state, player):
+""""Hipolito Player"""
+def hipolito_48(game, state):
     moves = state.get_moves()
     states = list(map(lambda m: state.next_move(m), moves))
     max = 0
     for i in range(1,len(states), 1):
-        if player == "atacante":
+        if state.to_move == "atacante":
             if states[i].utility > states[max].utility:
                 max = i
-        elif player == "defensor":
+        elif state.to_move == "defensor":
             if 0-states[i].utility > 0-states[max].utility:
                 max = i
         else:
             raise RuntimeError("Invalid player")
     return moves[i]
 
-def hipolitoF(game, state):
-    moves = state.get_moves()
-    states = list(map(lambda m: state.next_move(m), moves))
-    max = 0
-    for i in range(1,len(states), 1):
-        if game.to_move == "atacante":
-            if states[i].utility > states[max].utility:
-                max = i
-        elif game.to_move == "defensor":
-            if 0-states[i].utility > 0-states[max].utility:
-                max = i
-        else:
-            raise RuntimeError("Invalid player")
-    return moves[i]
-
-hipolito = Player("hipolito",
-                  lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = eval_hipolito))
-
-hipolito2 = Player("hipolito2", hipolitoF)
+hipolito2 = Player("hipolito2", hipolito_48)
 
 
 
