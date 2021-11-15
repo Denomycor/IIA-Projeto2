@@ -431,8 +431,7 @@ for g in range(2):
             "adn": ga
         }
         newAtk.append( pla )
-    listAtk.append(newAtk)
-    listDef.append(newDef)
+    listAtk.extend(newAtk)
     for i in range(len(listAtk)):
         listAtk[i] = mutate(listAtk[i])
         listDef[i] = mutate(listDef[i])
