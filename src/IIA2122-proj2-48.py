@@ -167,8 +167,6 @@ class Jogo2048_48(Game):
 
 
 
-
-
 """--------------------------------------------------------------------------------------
     Players
 --------------------------------------------------------------------------------------"""
@@ -284,6 +282,15 @@ defensor = Player("defensor",
                   lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_defesa_48))
 
 
+"""Input Player"""
+def readConsole(game, state):
+    print("points: "+str(state.utility))
+    print("Jogadas possíveis: ", state.get_moves())
+    return input(state.to_move+", para onde quer jogar? ")
+
+player = Player("input", readConsole)
+
+
 """Obsessive Players"""
 def obsessivo_48(game, state):
     return state.get_moves()[0]
@@ -355,9 +362,7 @@ def reproduce(t1, t2):
         
 
 
-
 def score(s, weight):
-    #print(s)
     return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
 
 def decorator_func_ataque_48(deco):
@@ -380,8 +385,17 @@ def decorator_func_defesa_48(deco):
 """--------------------------------------------------------------------------------------
     TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE
 --------------------------------------------------------------------------------------"""
+
 tmp = Jogo2048_48([3,2], [3,3])
-tmp.display(tmp.initial)
+tmp.initial.board[3][1] = 2
+tmp.initial.board[3][0] = 2
+tmp.jogar(player.alg, defensor_hipolito.alg)
+
+
+
+
+
+
 
 #print(tmp.jogar(atacante_obsessivo.alg, atacante_hipolito.alg, False))
 
@@ -389,22 +403,11 @@ listAtk = [atacante_hipolito, atacante_obsessivo]
 listDef = [defensor_hipolito, defensor_obsessivo]
 
 
-
-
 for i in range(3):
     ga = generate()
-    listAtk.append(Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(ga))))
+    listAtk.append(Player( "Atk-" + str(ga), lambda game, state: alphabeta_cutoff_search_new(state, game, 5, eval_fn = decorator_func_ataque_48(ga))))
     gd = generate()
-    listDef.append(Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_ataque_48(gd))))
+    listDef.append(Player( "Def-" + str(gd), lambda game, state: alphabeta_cutoff_search_new(state, game, 5, eval_fn = decorator_func_ataque_48(gd))))
 
 ss = faz_campeonato(listAtk, listDef, 1)
-
-def f(l):
-    l["player"].display()
-    print(l["score"])
-    print("-----------------------------------------------")
-
-for d in ss[0]:
-    f(d)
-for d in ss[1]:
-    f(d)
+#ss is a tuple of lists of dictionaries
