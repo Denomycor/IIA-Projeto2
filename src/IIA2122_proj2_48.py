@@ -118,7 +118,6 @@ class Jogo2048State(GameState):
             raise RuntimeError("Error - invalid player descriptor")
 
 
-
 """--------------------------------------------------------------------------------------
     Game Class
 --------------------------------------------------------------------------------------"""
@@ -144,8 +143,8 @@ class Jogo2048_48(Game):
             finalState = state.next_move(i)
         return finalState
 
+    """utility is the score of the current board, equal to both players"""
     def utility(self, state, player):
-        #utility is the score on a current state, equal to both players
         return state.utility 
 
     """Return True if this is a final state for the game."""
@@ -165,11 +164,10 @@ class Jogo2048_48(Game):
         return super().jogar(jogador1, jogador2, verbose)
 
 
-
 """--------------------------------------------------------------------------------------
     Eval Parameters
 --------------------------------------------------------------------------------------"""
-#The highter the avg the more combined pieces are.
+#The higher the avg the more combined pieces are.
 def boardAvg(board):
     c = 0
     acc = 0
@@ -242,6 +240,26 @@ def boardPos(board):
 
     return curr/base
 
+def score(s, weight):
+    return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
+
+
+def decorator_func_ataque_48(deco):
+
+    def func_ataque_48(state, player):
+        return score(state, deco)
+
+    return func_ataque_48
+
+
+def decorator_func_defesa_48(deco):
+    
+    def func_defesa_48(state, player):
+        return score(state, deco)
+    
+    return func_defesa_48
+
+
 """--------------------------------------------------------------------------------------
     Players
 --------------------------------------------------------------------------------------"""
@@ -299,6 +317,7 @@ def hipolito_48(game, state):
 atacante_hipolito = Player("hipolitoA", hipolito_48)
 defensor_hipolito = Player("hipolitoD", hipolito_48)
 
+
 """--------------------------------------------------------------------------------------
     Genetic
 --------------------------------------------------------------------------------------"""
@@ -306,16 +325,6 @@ defensor_hipolito = Player("hipolitoD", hipolito_48)
 def randomGame():
     return Jogo2048_48([randint(0,3), randint(0,3)], [randint(0,3), randint(0,3)])
 
-def faz_campeonato(listAtk, listDef):
-    for a in listAtk:
-        for d in listDef:
-            game = randomGame()
-            score = game.jogar(a["player"].alg, d["player"].alg, False)
-            print(a["player"].name + " vs " + d["player"].name + " score: " + str(score))
-            a["score"] += score
-            d["score"] += score
-
-    return (listAtk, listDef)
 
 def generate():
     a = randint(0, 100)
@@ -356,34 +365,6 @@ def mutate(ent, g):
         new[i] += [-fac, fac][randint(0,1)]
     return tuple(new)
 
-def score(s, weight):
-    return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
-
-def decorator_func_ataque_48(deco):
-
-    def func_ataque_48(state, player):
-        return score(state, deco)
-
-    return func_ataque_48
-
-
-def decorator_func_defesa_48(deco):
-    
-    def func_defesa_48(state, player):
-        return score(state, deco)
-    
-    return func_defesa_48
-
-
-def writetxt(players, id):
-    path = 'attack.txt' if id == 0 else 'defense.txt'
-    with open(path, 'w') as file:
-        for info in players:
-            file.write('-----------------------------------------------\n')
-            file.write('Player: '+info["player"].name+' |Score: '+ str(info["score"])+' |ADN: '+str(info["adn"])+'\n')
-
-
-
 def createPlayer(prefix, gen, player):
     
     func = decorator_func_ataque_48(gen) if player == "atacante" else decorator_func_defesa_48(gen) 
@@ -393,6 +374,34 @@ def createPlayer(prefix, gen, player):
         "adn": gen
     }
     return res
+
+def writetxt(players, id):
+    path = 'attack.txt' if id == 0 else 'defense.txt'
+    with open(path, 'w') as file:
+        for info in players:
+            file.write('-----------------------------------------------\n')
+            file.write('Player: '+info["player"].name+' |Score: '+ str(info["score"])+' |ADN: '+str(info["adn"])+'\n')
+
+
+"""--------------------------------------------------------------------------------------
+    Games and Tournaments
+--------------------------------------------------------------------------------------"""
+
+def faz_campeonato(listAtk, listDef):
+    for a in listAtk:
+        for d in listDef:
+            game = randomGame()
+            score = game.jogar(a["player"].alg, d["player"].alg, False)
+            print(a["player"].name + " vs " + d["player"].name + " score: " + str(score))
+            a["score"] += score
+            d["score"] += score
+
+    return (listAtk, listDef)
+
+
+
+
+
 
 """--------------------------------------------------------------------------------------
     TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE
