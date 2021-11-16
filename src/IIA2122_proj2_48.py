@@ -75,8 +75,6 @@ class Jogo2048State(GameState):
     
     """Returns a new state representing the board after a player action, doesn't check whether the action is valid or not"""
     def next_move(self, move):
-        #TODO os novos estados criados precisam de ter o campo utility atualizado (nova pontuação)
-
         if self.to_move == "atacante":
             return self.__collapse(move)
         elif self.to_move == "defensor":
@@ -134,10 +132,11 @@ class Jogo2048_48(Game):
     def actions(self, state):
         return state.get_moves()
 
-    """Return the state that results from making a move from a state."""
+    """Return the state that results from making a move on a state."""
     def result(self, state, move):
         return state.next_move(move)
 
+    """Returns the state that results from making several moves on a state"""
     def resultActions(self, state, moves):
         finalState = None
         for i in moves:
@@ -160,10 +159,11 @@ class Jogo2048_48(Game):
     def display(self, state):
         state.display()
 
+    """Makes a match between two players"""
     def jogar(self, jogador1, jogador2, verbose=True):
-        #TODO
         return super().jogar(jogador1, jogador2, verbose)
 
+    """Makes a match between two players, with a timeout"""
     def jogarTimeout(self, jogador1, jogador2, nsec, verbose=True):
         estado = self.initial
         if verbose :
@@ -192,7 +192,8 @@ class Jogo2048_48(Game):
 """--------------------------------------------------------------------------------------
     Eval Parameters
 --------------------------------------------------------------------------------------"""
-#The higher the avg the more combined pieces are.
+
+"""The higher the average the more combined pieces are."""
 def boardAvg(board):
     c = 0
     acc = 0
@@ -206,7 +207,7 @@ def boardAvg(board):
                     max = j
     return acc/float(c)/max
 
-#The emptier the board the furthest the game is to ending.
+"""The emptier the board the furthest the game is to ending."""
 def boardEmpty(board):
     c = 0
     for i in board:
@@ -215,7 +216,7 @@ def boardEmpty(board):
                 c+=1
     return c/15.0
 
-#The more pieces with equal value lined up with no other pieces between them the better the board.
+"""#The more pieces with equal value lined up with no other pieces between them the better the board."""
 def boardComb(board):
     pot=0
     for i in range(4):
@@ -232,7 +233,7 @@ def boardComb(board):
                 lastV = board[j][i]
     return pot/24.0
 
-#The better the disposition of the pieces on the board the better.
+"""The better the disposition of the pieces on the board the better."""
 def boardPos(board):
 
     def calcWeight(board1, board2):
@@ -265,10 +266,11 @@ def boardPos(board):
 
     return curr/base
 
-
+""""""
 def score(s, weight):
     return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
 
+"""Decorator for attack function"""
 def decorator_func_ataque_48(deco):
 
     def func_ataque_48(state, player):
@@ -276,7 +278,7 @@ def decorator_func_ataque_48(deco):
 
     return func_ataque_48
 
-
+"""Decorator for defense function"""
 def decorator_func_defesa_48(deco):
     
     def func_defesa_48(state, player):
@@ -288,6 +290,8 @@ def decorator_func_defesa_48(deco):
 """--------------------------------------------------------------------------------------
     Players
 --------------------------------------------------------------------------------------"""
+
+"""Represents a player"""
 class Player:
     def __init__(self, name, alg):
         self.name = name
@@ -295,25 +299,6 @@ class Player:
 
     def display(self):
         print(self.name)
-
-
-
-def score(s, weight):
-    return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
-
-def decorator_func_ataque_48(deco):
-
-    def func_ataque_48(state, player):
-        return score(state, deco)
-
-    return func_ataque_48
-
-def decorator_func_defesa_48(deco):
-    
-    def func_defesa_48(state, player):
-        return score(state, deco)
-    
-    return func_defesa_48
 
 
 #func_ataque_48 = decorator_func_ataque_48(weight)
@@ -324,10 +309,8 @@ def decorator_func_defesa_48(deco):
 atacante = Player("atacante",
                   lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_ataque_48))
 
-
 defensor = Player("defensor",
                   lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_defesa_48))
-
 
 """Input Player"""
 def readConsole(game, state):
@@ -337,14 +320,12 @@ def readConsole(game, state):
 
 player = Player("input", readConsole)
 
-
 """Obsessive Players"""
 def obsessivo_48(game, state):
     return state.get_moves()[0]
 
 atacante_obsessivo = Player("obsessivoA", obsessivo_48)
 defensor_obsessivo = Player("obsessivoD", obsessivo_48)
-
 
 """"Hipolito Player"""
 def hipolito_48(game, state):
@@ -370,10 +351,11 @@ defensor_hipolito = Player("hipolitoD", hipolito_48)
     Genetic
 --------------------------------------------------------------------------------------"""
 
+"""Generates a game with a random initial board"""
 def randomGame():
     return Jogo2048_48([randint(0,3), randint(0,3)], [randint(0,3), randint(0,3)])
 
-
+""""""
 def generate():
     a = randint(0, 100)
     b = randint(0, 100)
@@ -381,6 +363,7 @@ def generate():
     d = randint(0, 100)
     return (a,b,c,d)
 
+""""""
 def reproduce(t1, t2):
     t3 = [0,0,0,0]
     j = (t1, t2)
@@ -388,11 +371,13 @@ def reproduce(t1, t2):
         t3[i] = j[randint(0,1)][i]
     return tuple(t3)
 
+""""""
 def fitness( tuple, survivors ):
     tuple[0].sort(key=lambda x: x["score"], reverse=True)
     tuple[1].sort(key=lambda x: x["score"])
     return (tuple[0][0:survivors], tuple[1][0:survivors])
 
+""""""
 def mutate(ent, g):
 
     conv = 20-g/2 if 20-g/2>0 else 1
@@ -405,7 +390,7 @@ def mutate(ent, g):
         new[i] %= 100
     return tuple(new)
 
-
+"""Writes results to a txt file (one for attack players, one for defense players)"""
 def writetxt(players, id):
     path = 'attack.txt' if id == 0 else 'defense.txt'
     with open(path, 'w') as file:
@@ -418,6 +403,7 @@ def writetxt(players, id):
     Tournament
 --------------------------------------------------------------------------------------"""
 
+"""Runs a tournament between players """
 def faz_campeonato(listAtk, listDef):
     for a in listAtk:
         for d in listDef:
@@ -429,7 +415,7 @@ def faz_campeonato(listAtk, listDef):
 
     return (listAtk, listDef)
 
-
+""""""
 def createPlayer(prefix, gen, player):
     
     func = decorator_func_ataque_48(gen) if player == "atacante" else decorator_func_defesa_48(gen) 
@@ -440,6 +426,7 @@ def createPlayer(prefix, gen, player):
     }
     return res
 
+""""""
 def createOptPlayer(name, gen, player):
     func = decorator_func_ataque_48(gen) if player == "atacante" else decorator_func_defesa_48(gen) 
     res = {
@@ -450,7 +437,7 @@ def createOptPlayer(name, gen, player):
     return res
 
 """--------------------------------------------------------------------------------------
-    TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE
+    TEST CODE
 --------------------------------------------------------------------------------------"""
 
 
