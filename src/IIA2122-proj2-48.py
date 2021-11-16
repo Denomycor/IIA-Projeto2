@@ -392,6 +392,15 @@ def createPlayer(prefix, gen, player):
     }
     return res
 
+def createOptPlayer(name, gen, player):
+    func = decorator_func_ataque_48(gen) if player == "atacante" else decorator_func_defesa_48(gen) 
+    res = {
+        "player": Player( name, lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = func)),
+        "score": 0,
+        "adn": gen
+    }
+    return res
+
 """--------------------------------------------------------------------------------------
     TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE
 --------------------------------------------------------------------------------------"""
@@ -402,17 +411,30 @@ listDef = []#[defensor_obsessivo, defensor_hipolito]
 
 
 
-init_pop = 3
+init_pop = 0
 num_gen = 1000
-num_reproduce = 2
-num_survivors = 1
+num_reproduce = 1
+num_survivors = 3
 
+#createOptPlayer("Opt1AHipolito", (13, 47, 54, 57), "atacante")
+#createOptPlayer("Opt2AHipolito", (18, 47, 54, 57), "atacante")
 
 for i in range(init_pop):
     ga = generate()
     listAtk.append( createPlayer( "Atk-", ga, "atacante") )
     gd = generate()
     listDef.append( createPlayer( "Def-", gd, "defesa") )
+
+listAtk.append(createOptPlayer("Opt1A", (27.1, 72.5, 70.5, 75.0), "atacante"))
+listAtk.append(createOptPlayer("Opt2A", (99, 28, 78, 23), "atacante"))
+listAtk.append(createOptPlayer("Opt3A", (87.0, 67.5, 45.5, 75.0), "atacante"))
+listAtk.append(createOptPlayer("Opt4A", (18.299999999999997, 23.0, 58.0, 72.4), "atacante"))
+
+listDef.append(createOptPlayer("Opt1D", (83.1, 23.6, 35.5, 24.9), "defesa"))
+listDef.append(createOptPlayer("Opt2D", (24.799999999999997, 36.199999999999996, 87.5, 55.8), "defesa"))
+listDef.append(createOptPlayer("Opt3D", (68.6, 68.5, 8, 80.3), "defesa"))
+listDef.append(createOptPlayer("Opt4D", (54.3, 74.6, 52.9, 48.0), "defesa"))
+
 
 for g in range(num_gen):
     print("Generation: "+str(g))
@@ -434,4 +456,3 @@ for g in range(num_gen):
         newDef.append( createPlayer( "Def("+str(g)+")-", gd, "defesa") )
     listAtk.extend(newAtk)
     listDef.extend(newDef)
-
