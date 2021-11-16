@@ -242,6 +242,18 @@ def boardPos(board):
 
     return curr/base
 
+#The board is as good as more pieces of the same tipe it has
+def boardSmooth(board):
+    seen = {}
+    starter = 16
+    for i in board:
+        for j in i:
+            if j not in seen and j!=0:
+                seen.add(j)
+                starter -= 1
+                
+    return starter/15
+
 """--------------------------------------------------------------------------------------
     Players
 --------------------------------------------------------------------------------------"""
