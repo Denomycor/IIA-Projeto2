@@ -298,19 +298,12 @@ class Player:
 def score(s, weight):
     return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
 
-def decorator_func_ataque_48(deco):
+def decorator_func_48(deco):
 
     def func_ataque_48(state, player):
         return score(state, deco)
 
     return func_ataque_48
-
-def decorator_func_defesa_48(deco):
-    
-    def func_defesa_48(state, player):
-        return score(state, deco)
-    
-    return func_defesa_48
 
 
 #func_ataque_48 = decorator_func_ataque_48(weight)
@@ -427,20 +420,18 @@ def faz_campeonato(listAtk, listDef):
     return (listAtk, listDef)
 
 
-def createPlayer(prefix, gen, player):
+def createPlayer(prefix, gen):
     
-    func = decorator_func_ataque_48(gen) if player == "atacante" else decorator_func_defesa_48(gen) 
     res = {
-        "player": Player( prefix + str(gen), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = func)),
+        "player": Player( prefix + str(gen), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_48(gen))),
         "score": 0,
         "adn": gen
     }
     return res
 
-def createOptPlayer(name, gen, player):
-    func = decorator_func_ataque_48(gen) if player == "atacante" else decorator_func_defesa_48(gen) 
+def createOptPlayer(name, gen):
     res = {
-        "player": Player( name, lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = func)),
+        "player": Player( name, lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_48(gen))),
         "score": 0,
         "adn": gen
     }
@@ -451,10 +442,8 @@ def createOptPlayer(name, gen, player):
 --------------------------------------------------------------------------------------"""
 
 
-
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
 listDef = []#[defensor_obsessivo, defensor_hipolito]
-
 
 
 init_pop = 0
@@ -462,26 +451,26 @@ num_gen = 1000
 num_reproduce = 1
 num_survivors = 3
 
-#createOptPlayer("Opt1AHipolito", (13, 47, 54, 57), "atacante")
-#createOptPlayer("Opt2AHipolito", (18, 47, 54, 57), "atacante")
+#createOptPlayer("Opt1AHipolito", (13, 47, 54, 57))
+#createOptPlayer("Opt2AHipolito", (18, 47, 54, 57))
 
 for i in range(init_pop):
     ga = generate()
-    listAtk.append( createPlayer( "Atk-", ga, "atacante") )
+    listAtk.append( createPlayer( "Atk-", ga) )
     gd = generate()
-    listDef.append( createPlayer( "Def-", gd, "defesa") )
+    listDef.append( createPlayer( "Def-", gd) )
 
-listAtk.append(createOptPlayer("Opt1A", (27.1, 72.5, 70.5, 75.0), "atacante"))
-listAtk.append(createOptPlayer("Opt2A", (99, 28, 78, 23), "atacante"))
-listAtk.append(createOptPlayer("Opt3A", (87.0, 67.5, 45.5, 75.0), "atacante"))
-listAtk.append(createOptPlayer("Opt4A", (18.299999999999997, 23.0, 58.0, 72.4), "atacante"))
-listAtk.append(createOptPlayer("OptOptA", (10.299999999999997, 27.0, 85.0, 74.5), "atacante"))
+listAtk.append(createOptPlayer("Opt1A", (27.1, 72.5, 70.5, 75.0)))
+listAtk.append(createOptPlayer("Opt2A", (99, 28, 78, 23)))
+listAtk.append(createOptPlayer("Opt3A", (87.0, 67.5, 45.5, 75.0)))
+listAtk.append(createOptPlayer("Opt4A", (18.299999999999997, 23.0, 58.0, 72.4)))
+listAtk.append(createOptPlayer("OptOptA", (10.299999999999997, 27.0, 85.0, 74.5)))
 
-listDef.append(createOptPlayer("Opt1D", (83.1, 23.6, 35.5, 24.9), "defesa"))
-listDef.append(createOptPlayer("Opt2D", (24.799999999999997, 36.199999999999996, 87.5, 55.8), "defesa"))
-listDef.append(createOptPlayer("Opt3D", (68.6, 68.5, 8, 80.3), "defesa"))
-listDef.append(createOptPlayer("Opt4D", (54.3, 74.6, 52.9, 48.0), "defesa"))
-listDef.append(createOptPlayer("OptOptD", (99.1, 74.6, 37.0, 57.900000000000006), "defesa"))
+listDef.append(createOptPlayer("Opt1D", (83.1, 23.6, 35.5, 24.9)))
+listDef.append(createOptPlayer("Opt2D", (24.799999999999997, 36.199999999999996, 87.5, 55.8)))
+listDef.append(createOptPlayer("Opt3D", (68.6, 68.5, 8, 80.3)))
+listDef.append(createOptPlayer("Opt4D", (54.3, 74.6, 52.9, 48.0)))
+listDef.append(createOptPlayer("OptOptD", (99.1, 74.6, 37.0, 57.900000000000006)))
 
 
 for g in range(num_gen):
