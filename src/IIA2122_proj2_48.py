@@ -75,8 +75,6 @@ class Jogo2048State(GameState):
     
     """Returns a new state representing the board after a player action, doesn't check whether the action is valid or not"""
     def next_move(self, move):
-        #TODO os novos estados criados precisam de ter o campo utility atualizado (nova pontuação)
-
         if self.to_move == "atacante":
             return self.__collapse(move)
         elif self.to_move == "defensor":
@@ -161,7 +159,6 @@ class Jogo2048_48(Game):
         state.display()
 
     def jogar(self, jogador1, jogador2, verbose=True):
-        #TODO
         return super().jogar(jogador1, jogador2, verbose)
 
     def jogarTimeout(self, jogador1, jogador2, nsec, verbose=True):
@@ -173,9 +170,9 @@ class Jogo2048_48(Game):
         
         while not self.terminal_test(estado):
             try:
-                ReturnedValue = func_timeout(nsec, jogadores[ind_proximo](self,estado), args=(self, estado))
+                ReturnedValue = func_timeout(nsec, jogadores[ind_proximo], args=(self, estado))
             except FunctionTimedOut:
-                print("Timed Out!", jogadores[ind_proximo].nome)
+                print("Timed Out!")
                 ReturnedValue = None
             jogada = ReturnedValue
             if jogada == None:
@@ -452,6 +449,7 @@ def createOptPlayer(name, gen, player):
 """--------------------------------------------------------------------------------------
     TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE
 --------------------------------------------------------------------------------------"""
+
 
 
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
