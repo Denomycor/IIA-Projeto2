@@ -173,9 +173,9 @@ class Jogo2048_48(Game):
         
         while not self.terminal_test(estado):
             try:
-                ReturnedValue = func_timeout(nsec, jogadores[ind_proximo](self,estado), args=(self, estado))
+                ReturnedValue = func_timeout(nsec, jogadores[ind_proximo], args=(self, estado))
             except FunctionTimedOut:
-                print("Timed Out!", jogadores[ind_proximo].nome)
+                print("Timed Out!")
                 ReturnedValue = None
             jogada = ReturnedValue
             if jogada == None:
@@ -439,6 +439,7 @@ def createOptPlayer(name, gen, player):
 """--------------------------------------------------------------------------------------
     TEST CODE
 --------------------------------------------------------------------------------------"""
+
 
 
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
