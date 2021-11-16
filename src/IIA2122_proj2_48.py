@@ -1,6 +1,7 @@
 import copy
 from jogos import *
 from random import randint
+from func_timeout import func_timeout, FunctionTimedOut
 
 """--------------------------------------------------------------------------------------
     Helpers
@@ -162,6 +163,30 @@ class Jogo2048_48(Game):
     def jogar(self, jogador1, jogador2, verbose=True):
         #TODO
         return super().jogar(jogador1, jogador2, verbose)
+
+    def jogarTimeout(self, jogador1, jogador2, nsec, verbose=True):
+        estado = self.initial
+        if verbose :
+            self.display
+        jogadores = (jogador1,jogador2)
+        ind_proximo = 0
+        
+        while not self.terminal_test(estado):
+            try:
+                ReturnedValue = func_timeout(nsec, jogadores[ind_proximo](self,estado), args=(self, estado))
+            except FunctionTimedOut:
+                print("Timed Out!", jogadores[ind_proximo].nome)
+                ReturnedValue = None
+            jogada = ReturnedValue
+            if jogada == None:
+                return 0 if estado.to_move == "atacante" else 100000
+            else:
+                estado = self.result(estado,jogada)
+                if verbose:
+                    self.display(estado)
+                ind_proximo = 1 - ind_proximo
+
+            return self.utility(estado, self.to_move(self.initial))
 
 
 """--------------------------------------------------------------------------------------
@@ -390,7 +415,7 @@ def writetxt(players, id):
 
 
 """--------------------------------------------------------------------------------------
-    Games and Tournaments
+    Tournament
 --------------------------------------------------------------------------------------"""
 
 def faz_campeonato(listAtk, listDef):
@@ -403,7 +428,6 @@ def faz_campeonato(listAtk, listDef):
             d["score"] += score
 
     return (listAtk, listDef)
-
 
 
 def createPlayer(prefix, gen, player):
