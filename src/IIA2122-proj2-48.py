@@ -1,6 +1,6 @@
 import copy
 from jogos import *
-from random import randint
+import random as rand
 
 """--------------------------------------------------------------------------------------
     Helpers
@@ -304,12 +304,12 @@ defensor_hipolito = Player("hipolitoD", hipolito_48)
 --------------------------------------------------------------------------------------"""
 
 def randomGame():
-    return Jogo2048_48([randint(0,3), randint(0,3)], [randint(0,3), randint(0,3)])
+    return Jogo2048_48([rand.randint(0,3), rand.randint(0,3)], [rand.randint(0,3), rand.randint(0,3)])
 
 def faz_campeonato(listAtk, listDef):
+    game = randomGame()
     for a in listAtk:
-        for d in listDef:
-            game = randomGame()
+        for d in listDef:        
             score = game.jogar(a["player"].alg, d.alg, False)
             print(a["player"].name + " vs " + d.name + " score: " + str(score))
             a["score"] += score
@@ -318,17 +318,17 @@ def faz_campeonato(listAtk, listDef):
     return (listAtk, listDef)
 
 def generate():
-    a = randint(0, 100)
-    b = randint(0, 100)
-    c = randint(0, 100)
-    d = randint(0, 100)
+    a = rand.randint(0, 100)
+    b = rand.randint(0, 100)
+    c = rand.randint(0, 100)
+    d = rand.randint(0, 100)
     return (a,b,c,d)
 
 def reproduce(t1, t2):
     t3 = [0,0,0,0]
     j = (t1, t2)
     for i in range(4):
-        t3[i] = j[randint(0,1)][i]
+        t3[i] = j[rand.randint(0,1)][i]
     return tuple(t3)
 
 def fitness( tuple, survivors ):
@@ -339,21 +339,20 @@ def fitness( tuple, survivors ):
 def mutate(ent, g):
     fac=0
     if g<10:
-        fac = 3
+        fac = 0.2
     elif g<20:
-        fac = 2
+        fac = 0.15
     elif g<30:
-        fac = 1
-    elif g<40:
-        fac = 0.5
-    elif g<50:
         fac = 0.1
+    elif g<40:
+        fac = 0.05
+    elif g<50:
+        fac = 0.01
 
     new = list(ent)
     for i in range(len(new)):
-        if randint(0,10)>2:
-            continue
-        new[i] += [-fac, fac][randint(0,1)]
+        if rand.random() < fac:
+            new[i] = rand.randint(0, 100)
     return tuple(new)
 
 def score(s, weight):
@@ -398,43 +397,55 @@ def createPlayer(prefix, gen, player):
     TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE
 --------------------------------------------------------------------------------------"""
 
-
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
 listDef = [defensor_hipolito]#[defensor_obsessivo, defensor_hipolito]
 
 
 
-init_pop = 10
+listAtk.append(createPlayer("Opt1A", (27.1, 72.5, 70.5, 75.0), "atacante"))
+listAtk.append(createPlayer("Opt2A", (99, 28, 78, 23), "atacante"))
+listAtk.append(createPlayer("Opt3A", (87.0, 67.5, 45.5, 75.0), "atacante"))
+listAtk.append(createPlayer("Opt4A", (18.299999999999997, 23.0, 58.0, 72.4), "atacante"))
+
+
+for i in range(10):
+    game = randomGame()
+    for j in listAtk:
+        sc = game.jogar( j["player"].alg, defensor_hipolito.alg, False )
+        print( j["player"].name + " -----> " + str(sc))
+    
+
+init_pop = 1
 num_gen = 1000
-num_reproduce = 8
+num_reproduce = 0
 num_survivors = 2
 
 
-for i in range(init_pop):
-    ga = generate()
-    listAtk.append( createPlayer( "Atk-", ga, "atacante") )
-    #gd = generate()
-    #listDef.append( createPlayer( "Def-", gd, "defesa") )
+#for i in range(init_pop):
+#    ga = (13, 47, 38, 57)
+#    listAtk.append( createPlayer( "Atk-", ga, "atacante") )
+#    #gd = generate()
+#    #listDef.append( createPlayer( "Def-", gd, "defesa") )
 
-for g in range(num_gen):
-    print("Generation: "+str(g))
-    for j in range(len(listAtk)):
-        listAtk[j]["score"] = 0
-        #listDef[i]["score"] = 0
-    lists = faz_campeonato(listAtk, listDef)
-    lists = fitness(lists, num_survivors)
-        
-    writetxt(listAtk, 0)
-    #writetxt(listDef, 1)
-    listAtk = lists[0]
-    listDef = lists[1]
-    newAtk = []
-    #newDef = []
-    for i in range(num_reproduce):
-        ga = mutate( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ), g)
-        newAtk.append( createPlayer( "Atk("+str(g)+")-", ga, "atacante") )
-        #gd = mutate( reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] ), g )
-        #newDef.append( createPlayer( "Def("+str(g)+")-", gd, "defesa") )
-    listAtk.extend(newAtk)
-    #listDef.extend(newDef)
+#for g in range(num_gen):
+#    print("Generation: "+str(g))
+#    for j in range(len(listAtk)):
+#        listAtk[j]["score"] = 0
+#        #listDef[i]["score"] = 0
+#    lists = faz_campeonato(listAtk, listDef)
+#    lists = fitness(lists, num_survivors)
+#        
+#    writetxt(listAtk, 0)
+#    #writetxt(listDef, 1)
+#    listAtk = lists[0]
+#    listDef = lists[1]
+#    newAtk = []
+#    #newDef = []
+#    for i in range(num_reproduce):
+#        ga = mutate( reproduce(listAtk[rand.randint(0, len(listAtk)-1)]["adn"], listAtk[rand.randint(0, len(listAtk)-1)]["adn"] ), g)
+#        newAtk.append( createPlayer( "Atk("+str(g)+")-", ga, "atacante") )
+#        #gd = mutate( reproduce(listDef[rand.randint(0, len(listDef)-1)]["adn"], listDef[rand.randint(0, len(listDef)-1)]["adn"] ), g )
+#        #newDef.append( createPlayer( "Def("+str(g)+")-", gd, "defesa") )
+#    listAtk.extend(newAtk)
+#    #listDef.extend(newDef)
 
