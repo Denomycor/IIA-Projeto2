@@ -240,9 +240,9 @@ def boardPos(board):
 
     return curr/base
 
+
 def score(s, weight):
     return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
-
 
 def decorator_func_ataque_48(deco):
 
@@ -270,6 +270,29 @@ class Player:
 
     def display(self):
         print(self.name)
+
+
+
+def score(s, weight):
+    return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
+
+def decorator_func_ataque_48(deco):
+
+    def func_ataque_48(state, player):
+        return score(state, deco)
+
+    return func_ataque_48
+
+def decorator_func_defesa_48(deco):
+    
+    def func_defesa_48(state, player):
+        return score(state, deco)
+    
+    return func_defesa_48
+
+
+#func_ataque_48 = decorator_func_ataque_48(weight)
+#func_defesa_48 = decorator_func_defesa_48(weight)
 
 
 """Alphabeta Players"""
@@ -346,34 +369,17 @@ def fitness( tuple, survivors ):
     return (tuple[0][0:survivors], tuple[1][0:survivors])
 
 def mutate(ent, g):
-    fac=0
-    if g<10:
-        fac = 3
-    elif g<20:
-        fac = 2
-    elif g<30:
-        fac = 1
-    elif g<40:
-        fac = 0.5
-    elif g<50:
-        fac = 0.1
+
+    conv = 20-g/2 if 20-g/2>0 else 1
 
     new = list(ent)
     for i in range(len(new)):
-        if randint(0,10)>2:
+        if randint(0,10)>5:
             continue
-        new[i] += [-fac, fac][randint(0,1)]
+        new[i] += [randint(0,30)+conv, 0-(randint(0,30)+conv)][randint(0,1)]
+        new[i] %= 100
     return tuple(new)
 
-def createPlayer(prefix, gen, player):
-    
-    func = decorator_func_ataque_48(gen) if player == "atacante" else decorator_func_defesa_48(gen) 
-    res = {
-        "player": Player( prefix + str(gen), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = func)),
-        "score": 0,
-        "adn": gen
-    }
-    return res
 
 def writetxt(players, id):
     path = 'attack.txt' if id == 0 else 'defense.txt'
@@ -400,8 +406,24 @@ def faz_campeonato(listAtk, listDef):
 
 
 
+def createPlayer(prefix, gen, player):
+    
+    func = decorator_func_ataque_48(gen) if player == "atacante" else decorator_func_defesa_48(gen) 
+    res = {
+        "player": Player( prefix + str(gen), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = func)),
+        "score": 0,
+        "adn": gen
+    }
+    return res
 
-
+def createOptPlayer(name, gen, player):
+    func = decorator_func_ataque_48(gen) if player == "atacante" else decorator_func_defesa_48(gen) 
+    res = {
+        "player": Player( name, lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = func)),
+        "score": 0,
+        "adn": gen
+    }
+    return res
 
 """--------------------------------------------------------------------------------------
     TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE
@@ -413,17 +435,32 @@ listDef = []#[defensor_obsessivo, defensor_hipolito]
 
 
 
-init_pop = 6
+init_pop = 0
 num_gen = 1000
-num_reproduce = 4
-num_survivors = 2
+num_reproduce = 1
+num_survivors = 3
 
+#createOptPlayer("Opt1AHipolito", (13, 47, 54, 57), "atacante")
+#createOptPlayer("Opt2AHipolito", (18, 47, 54, 57), "atacante")
 
 for i in range(init_pop):
     ga = generate()
     listAtk.append( createPlayer( "Atk-", ga, "atacante") )
     gd = generate()
     listDef.append( createPlayer( "Def-", gd, "defesa") )
+
+listAtk.append(createOptPlayer("Opt1A", (27.1, 72.5, 70.5, 75.0), "atacante"))
+listAtk.append(createOptPlayer("Opt2A", (99, 28, 78, 23), "atacante"))
+listAtk.append(createOptPlayer("Opt3A", (87.0, 67.5, 45.5, 75.0), "atacante"))
+listAtk.append(createOptPlayer("Opt4A", (18.299999999999997, 23.0, 58.0, 72.4), "atacante"))
+listAtk.append(createOptPlayer("OptOptA", (10.299999999999997, 27.0, 85.0, 74.5), "atacante"))
+
+listDef.append(createOptPlayer("Opt1D", (83.1, 23.6, 35.5, 24.9), "defesa"))
+listDef.append(createOptPlayer("Opt2D", (24.799999999999997, 36.199999999999996, 87.5, 55.8), "defesa"))
+listDef.append(createOptPlayer("Opt3D", (68.6, 68.5, 8, 80.3), "defesa"))
+listDef.append(createOptPlayer("Opt4D", (54.3, 74.6, 52.9, 48.0), "defesa"))
+listDef.append(createOptPlayer("OptOptD", (99.1, 74.6, 37.0, 57.900000000000006), "defesa"))
+
 
 for g in range(num_gen):
     print("Generation: "+str(g))
@@ -445,4 +482,3 @@ for g in range(num_gen):
         newDef.append( createPlayer( "Def("+str(g)+")-", gd, "defesa") )
     listAtk.extend(newAtk)
     listDef.extend(newDef)
-
