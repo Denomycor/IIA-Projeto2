@@ -142,9 +142,9 @@ class Jogo2048_48(Game):
 
     """Returns the state that results from making several moves on a state"""
     def resultActions(self, state, moves):
-        finalState = None
+        finalState = state
         for i in moves:
-            finalState = state.next_move(i)
+            finalState = self.result(finalState, i)
         return finalState
 
     """utility is the score of the current board, equal to both players"""
@@ -462,6 +462,21 @@ def createOptPlayer(name, gen):
 """--------------------------------------------------------------------------------------
     TEST CODE
 --------------------------------------------------------------------------------------"""
+
+seqTeste=['cima',"1,0","cima","3,3","cima","2,0","direita","2,0","esquerda","1,0",
+          "baixo","0,2","baixo","0,0","direita","2,0","cima","2,2","baixo","1,0",
+          "esquerda","0,1","baixo","0,2","esquerda","0,2","baixo","0,3","cima","2,3",
+          "cima","2,0","esquerda","3,2","cima","1,2","esquerda","3,1","direita","3,1",
+          "direita","0,0"]
+
+fig3 = [[0,0,0,0],[0,0,0,0],[0,2,2,0],[0,0,0,0]]
+state4 = randomGame().resultActions(Jogo2048State(to_move = "atacante", utility = 0, board = fig3, moves=0), seqTeste)
+
+stat5 = randomGame().result(Jogo2048State(to_move = "atacante", utility = 0, board = fig3, moves=0), "cima")
+stat6 = randomGame().result(stat5, "1,0")
+
+randomGame().display(state4)
+
 
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
 listDef = []#[defensor_obsessivo, defensor_hipolito]
