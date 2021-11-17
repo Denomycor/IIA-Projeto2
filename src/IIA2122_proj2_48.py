@@ -285,12 +285,22 @@ def decorator_func_48(deco):
 
     return func_ataque_48
 
-"""Creates an eval function from a function that only takes the board as a parameter"""
-def decorator_eval_func(deco):
+"""Creates an eval function from a function that only takes the board as a parameter. For attackers"""
+def decorator_eval_func_atk(deco):
 
     """Eval function"""
     def evalFunc(state, player):
         return deco(state.board)
+
+    return evalFunc
+
+"""Creates an eval function from a function that only takes the board as a parameter. For attackers"""
+
+def decorator_eval_func_def(deco):
+
+    """Eval function"""
+    def evalFunc(state, player):
+        return 0 - deco(state.board)
 
     return evalFunc
 
@@ -316,10 +326,10 @@ func_defesa_48 = decorator_func_48(idealDefenderWeight)
 
 """Alphabeta Players"""
 atacante = Player("atacante",
-                  lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_ataque_48))
+                  lambda game, state: alphabeta_cutoff_search_new(state, game, 5, eval_fn = func_ataque_48))
 
 defensor = Player("defensor",
-                  lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_defesa_48))
+                  lambda game, state: alphabeta_cutoff_search_new(state, game, 5, eval_fn = func_defesa_48))
 
 """Input Player"""
 def readConsole(game, state):
