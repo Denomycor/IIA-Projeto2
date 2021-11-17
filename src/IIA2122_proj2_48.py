@@ -1,6 +1,7 @@
 import copy
 from jogos import *
 from random import randint
+from func_timeout import func_timeout, FunctionTimedOut
 
 """--------------------------------------------------------------------------------------
     Helpers
@@ -78,8 +79,6 @@ class Jogo2048State(GameState):
     
     """Returns a new state representing the board after a player action, doesn't check whether the action is valid or not"""
     def next_move(self, move):
-        #TODO os novos estados criados precisam de ter o campo utility atualizado (nova pontuação)
-
         if self.to_move == "atacante":
             return self.__collapse(move)
         elif self.to_move == "defensor":
@@ -137,10 +136,11 @@ class Jogo2048_48(Game):
     def actions(self, state):
         return state.get_moves()
 
-    """Return the state that results from making a move from a state."""
+    """Return the state that results from making a move on a state."""
     def result(self, state, move):
         return state.next_move(move)
 
+    """Returns the state that results from making several moves on a state"""
     def resultActions(self, state, moves):
         finalState = None
         for i in moves:
@@ -163,15 +163,41 @@ class Jogo2048_48(Game):
     def display(self, state):
         state.display()
 
+    """Makes a match between two players"""
     def jogar(self, jogador1, jogador2, verbose=True):
-        #TODO
         return super().jogar(jogador1, jogador2, verbose)
+
+    """Makes a match between two players, with a timeout"""
+    def jogarTimeout(self, jogador1, jogador2, nsec, verbose=True):
+        estado = self.initial
+        if verbose :
+            self.display
+        jogadores = (jogador1,jogador2)
+        ind_proximo = 0
+        
+        while not self.terminal_test(estado):
+            try:
+                ReturnedValue = func_timeout(nsec, jogadores[ind_proximo], args=(self, estado))
+            except FunctionTimedOut:
+                print("Timed Out!")
+                ReturnedValue = None
+            jogada = ReturnedValue
+            if jogada == None:
+                return 0 if estado.to_move == "atacante" else 100000
+            else:
+                estado = self.result(estado,jogada)
+                if verbose:
+                    self.display(estado)
+                ind_proximo = 1 - ind_proximo
+
+            return self.utility(estado, self.to_move(self.initial))
 
 
 """--------------------------------------------------------------------------------------
     Eval Parameters
 --------------------------------------------------------------------------------------"""
-#The higher the avg the more combined pieces are.
+
+"""The higher the average the more combined pieces are."""
 def boardAvg(board):
     c = 0
     acc = 0
@@ -185,7 +211,7 @@ def boardAvg(board):
                     max = j
     return acc/float(c)/max
 
-#The emptier the board the furthest the game is to ending.
+"""The emptier the board the furthest the game is to ending."""
 def boardEmpty(board):
     c = 0
     for i in board:
@@ -194,7 +220,7 @@ def boardEmpty(board):
                 c+=1
     return c/15.0
 
-#The more pieces with equal value lined up with no other pieces between them the better the board.
+"""#The more pieces with equal value lined up with no other pieces between them the better the board."""
 def boardComb(board):
     pot=0
     for i in range(4):
@@ -211,9 +237,10 @@ def boardComb(board):
                 lastV = board[j][i]
     return pot/24.0
 
-#The better the disposition of the pieces on the board the better.
+"""The better the disposition of the pieces on the board the better."""
 def boardPos(board):
 
+    """Calculates the score of this criteria for a board"""
     def calcWeight(board1, board2):
         acc = 0
         for i in range(4):
@@ -221,6 +248,7 @@ def boardPos(board):
                 acc += board1[i][j] * board2[i][j]
         return acc
 
+    """Places the pieces in optimal places on the board in order to maximize score"""
     def idealPos(board):
         flat = [item for row in board for item in row]
         flat.sort(reverse=True)
@@ -244,29 +272,24 @@ def boardPos(board):
 
     return curr/base
 
+"""Returns the value to be used as evaluation in alphabeta algorithms"""
 def score(s, weight):
     return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
 
+"""Decorates the evaluation function with a given set of weights"""
+def decorator_func_48(deco):
 
-def decorator_func_ataque_48(deco):
-
+    """Eval function"""
     def func_ataque_48(state, player):
         return score(state, deco)
 
     return func_ataque_48
 
-
-def decorator_func_defesa_48(deco):
-    
-    def func_defesa_48(state, player):
-        return score(state, deco)
-    
-    return func_defesa_48
-
-
 """--------------------------------------------------------------------------------------
     Players
 --------------------------------------------------------------------------------------"""
+
+"""Represents a player"""
 class Player:
     def __init__(self, name, alg):
         self.name = name
@@ -275,15 +298,19 @@ class Player:
     def display(self):
         print(self.name)
 
+idealAttackerWeight = (10.299999999999997, 27.0, 85.0, 74.5)
+idealDefenderWeight = (99.1, 74.6, 37.0, 57.900000000000006)
+
+func_ataque_48 = decorator_func_48(idealAttackerWeight)
+func_defesa_48 = decorator_func_48(idealDefenderWeight)
+
 
 """Alphabeta Players"""
 atacante = Player("atacante",
                   lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_ataque_48))
 
-
 defensor = Player("defensor",
                   lambda game, state: alphabeta_cutoff_search_new(state, game, 10, eval_fn = func_defesa_48))
-
 
 """Input Player"""
 def readConsole(game, state):
@@ -293,14 +320,12 @@ def readConsole(game, state):
 
 player = Player("input", readConsole)
 
-
 """Obsessive Players"""
 def obsessivo_48(game, state):
     return state.get_moves()[0]
 
 atacante_obsessivo = Player("obsessivoA", obsessivo_48)
 defensor_obsessivo = Player("obsessivoD", obsessivo_48)
-
 
 """"Hipolito Player"""
 def hipolito_48(game, state):
@@ -326,10 +351,11 @@ defensor_hipolito = Player("hipolitoD", hipolito_48)
     Genetic
 --------------------------------------------------------------------------------------"""
 
+"""Generates a game with a random initial board"""
 def randomGame():
     return Jogo2048_48([randint(0,3), randint(0,3)], [randint(0,3), randint(0,3)])
 
-
+"""Generates a random set of weights for the genetic algorithm"""
 def generate():
     a = randint(0, 100)
     b = randint(0, 100)
@@ -337,6 +363,7 @@ def generate():
     d = randint(0, 100)
     return (a,b,c,d)
 
+"""Takes 2 sets of weights and merges them into one, taking randomly the weight from one parent or the other"""
 def reproduce(t1, t2):
     t3 = [0,0,0,0]
     j = (t1, t2)
@@ -344,41 +371,26 @@ def reproduce(t1, t2):
         t3[i] = j[randint(0,1)][i]
     return tuple(t3)
 
+"""Kills/Discards all entities of the genetic algorithm keeping only the #survivors better ones"""
 def fitness( tuple, survivors ):
     tuple[0].sort(key=lambda x: x["score"], reverse=True)
     tuple[1].sort(key=lambda x: x["score"])
     return (tuple[0][0:survivors], tuple[1][0:survivors])
 
+"""Takes an entity (set of weights) and the current generation, and has 50% chance to change each weight. The mutations are less radical has generations progress"""
 def mutate(ent, g):
-    fac=0
-    if g<10:
-        fac = 3
-    elif g<20:
-        fac = 2
-    elif g<30:
-        fac = 1
-    elif g<40:
-        fac = 0.5
-    elif g<50:
-        fac = 0.1
+
+    conv = 35-g/2 if 35-g/2>0 else 0
 
     new = list(ent)
     for i in range(len(new)):
-        if randint(0,10)>2:
+        if randint(0,10)>5:
             continue
-        new[i] += [-fac, fac][randint(0,1)]
+        new[i] += [randint(0,15)+conv, 0-(randint(0,15)+conv)][randint(0,1)]
+        new[i] %= 100
     return tuple(new)
 
-def createPlayer(prefix, gen, player):
-    
-    func = decorator_func_ataque_48(gen) if player == "atacante" else decorator_func_defesa_48(gen) 
-    res = {
-        "player": Player( prefix + str(gen), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = func)),
-        "score": 0,
-        "adn": gen
-    }
-    return res
-
+"""Writes results to a txt file (one for attack players, one for defense players)"""
 def writetxt(players, id):
     path = 'attack.txt' if id == 0 else 'defense.txt'
     with open(path, 'w') as file:
@@ -388,9 +400,10 @@ def writetxt(players, id):
 
 
 """--------------------------------------------------------------------------------------
-    Games and Tournaments
+    Tournament
 --------------------------------------------------------------------------------------"""
 
+"""Runs a tournament between players """
 def faz_campeonato(listAtk, listDef):
     for a in listAtk:
         for d in listDef:
@@ -402,13 +415,24 @@ def faz_campeonato(listAtk, listDef):
 
     return (listAtk, listDef)
 
+"""Creates a new player with a given ADN and a prefix"""
+def createPlayer(prefix, gen):
+    return {
+        "player": Player( prefix + str(gen), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_48(gen))),
+        "score": 0,
+        "adn": gen
+    }
 
-
-
-
+"""Manually creates a player with the given name and ADN"""
+def createOptPlayer(name, gen):
+    return {
+        "player": Player( name, lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_48(gen))),
+        "score": 0,
+        "adn": gen
+    }
 
 """--------------------------------------------------------------------------------------
-    TODO: REMOVE BEFORE DELIVERY THIS IS TEST CODE
+    TEST CODE
 --------------------------------------------------------------------------------------"""
 
 
@@ -416,18 +440,32 @@ listAtk = []#[atacante_hipolito, atacante_obsessivo]
 listDef = []#[defensor_obsessivo, defensor_hipolito]
 
 
-
-init_pop = 6
+init_pop = 0
 num_gen = 1000
-num_reproduce = 4
-num_survivors = 2
+num_reproduce = 1
+num_survivors = 3
 
+#createOptPlayer("Opt1AHipolito", (13, 47, 54, 57))
+#createOptPlayer("Opt2AHipolito", (18, 47, 54, 57))
 
 for i in range(init_pop):
     ga = generate()
-    listAtk.append( createPlayer( "Atk-", ga, "atacante") )
+    listAtk.append( createPlayer( "Atk-", ga) )
     gd = generate()
-    listDef.append( createPlayer( "Def-", gd, "defesa") )
+    listDef.append( createPlayer( "Def-", gd) )
+
+listAtk.append(createOptPlayer("Opt1A", (27.1, 72.5, 70.5, 75.0)))
+listAtk.append(createOptPlayer("Opt2A", (99, 28, 78, 23)))
+listAtk.append(createOptPlayer("Opt3A", (87.0, 67.5, 45.5, 75.0)))
+listAtk.append(createOptPlayer("Opt4A", (18.299999999999997, 23.0, 58.0, 72.4)))
+listAtk.append(createOptPlayer("OptOptA", (10.299999999999997, 27.0, 85.0, 74.5)))
+
+listDef.append(createOptPlayer("Opt1D", (83.1, 23.6, 35.5, 24.9)))
+listDef.append(createOptPlayer("Opt2D", (24.799999999999997, 36.199999999999996, 87.5, 55.8)))
+listDef.append(createOptPlayer("Opt3D", (68.6, 68.5, 8, 80.3)))
+listDef.append(createOptPlayer("Opt4D", (54.3, 74.6, 52.9, 48.0)))
+listDef.append(createOptPlayer("OptOptD", (99.1, 74.6, 37.0, 57.900000000000006)))
+
 
 for g in range(num_gen):
     print("Generation: "+str(g))
@@ -444,9 +482,8 @@ for g in range(num_gen):
     newDef = []
     for i in range(num_reproduce):
         ga = mutate( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ), g)
-        newAtk.append( createPlayer( "Atk("+str(g)+")-", ga, "atacante") )
+        newAtk.append( createPlayer( "Atk("+str(g)+")-", ga) )
         gd = mutate( reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] ), g )
-        newDef.append( createPlayer( "Def("+str(g)+")-", gd, "defesa") )
+        newDef.append( createPlayer( "Def("+str(g)+")-", gd) )
     listAtk.extend(newAtk)
     listDef.extend(newDef)
-
