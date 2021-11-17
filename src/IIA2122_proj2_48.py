@@ -6,28 +6,30 @@ from func_timeout import func_timeout, FunctionTimedOut
 """--------------------------------------------------------------------------------------
     Helpers
 --------------------------------------------------------------------------------------"""
-ref = [0,0,0,0]
 
+"""rotates a given matrix 90 degrees"""
 def rotate90(board):
     return reverse(transpose(board))
 
-def alignLeft(str, chars):
-    return (" "*(chars-len(str)))+str
-
+""""Inverts a given list"""
 def reverse(line):
     return line[::-1]
 
+"""Transposes a given matrix"""
 def transpose(matrix):
-    return list(map(lambda x: list(x), zip(*matrix)))
+    return [ list(x) for x in zip(*matrix) ]
 
-def removeZeros(line):
+"""Removes zeros from a given array"""
+def remove_zeros(line):
     return list(filter( lambda x: x != 0, line))
 
-def pad(line):
-    return ref[:len(ref)-len(line):] + line
+"""Pads a given array until a given length or 4 by default"""
+def pad(array, leng=4, filler=" ", isStr=True):
+    return (filler if isStr else [filler])*(leng-len(array)) + array
 
-def sumLine(line):
-    li = removeZeros(line)
+"""Sums a line with 2048 rules """
+def sum_line(line):
+    li = remove_zeros(line)
 
     points = 0
     for i in range(len(li)-2, -1, -1):
@@ -37,9 +39,10 @@ def sumLine(line):
             points += li[i+1]
             i -= 1
     
-    return (pad(removeZeros(li)), points)
+    return (pad(remove_zeros(li), filler=0, isStr=False), points)
 
-def sumPoints( m, toReverse, toTranspose):
+"""Sums the points of all the lines"""
+def sum_points( m, toReverse, toTranspose):
     linesAndPoints = list(m)
     board = list( map( lambda x: reverse(x[0]), linesAndPoints) if toReverse else map( lambda x: x[0], linesAndPoints))
     if toTranspose:
@@ -49,11 +52,12 @@ def sumPoints( m, toReverse, toTranspose):
 
     return (board, points)
 
+"""Dictonaries that maps a 2048 action to a function that executes said action in a given board"""
 actions = {
-    "direita": lambda m: sumPoints( map( lambda l: sumLine(l), m ), False, False), 
-    "esquerda": lambda m: sumPoints( map( lambda l: sumLine(reverse(l)) , m ), True, False),
-    "cima": lambda m: sumPoints( map( lambda l: sumLine(reverse(l)) , transpose(m)), True, True),
-    "baixo": lambda m: sumPoints( map( lambda l: sumLine(l) , transpose(m)), False, True)
+    "direita": lambda m: sum_points( map( lambda l: sum_line(l), m ), False, False),
+    "esquerda": lambda m: sum_points( map( lambda l: sum_line(reverse(l)) , m ), True, False),
+    "cima": lambda m: sum_points( map( lambda l: sum_line(reverse(l)) , transpose(m)), True, True),
+    "baixo": lambda m: sum_points( map( lambda l: sum_line(l) , transpose(m)), False, True)
 }
 
 
@@ -98,7 +102,7 @@ class Jogo2048State(GameState):
         print("="*28)
         for i in self.board:
             for j in i:
-                print(alignLeft(str(j), 5), end=" ")
+                print(pad(str(j), leng=5), end=" ")
             print()
         print("="*28)
 
@@ -236,6 +240,7 @@ def boardComb(board):
 """The better the disposition of the pieces on the board the better."""
 def boardPos(board):
 
+    """Calculates the score of this criteria for a board"""
     def calcWeight(board1, board2):
         acc = 0
         for i in range(4):
@@ -243,6 +248,7 @@ def boardPos(board):
                 acc += board1[i][j] * board2[i][j]
         return acc
 
+    """Places the pieces in optimal places on the board in order to maximize score"""
     def idealPos(board):
         flat = [item for row in board for item in row]
         flat.sort(reverse=True)
@@ -266,16 +272,27 @@ def boardPos(board):
 
     return curr/base
 
-
+"""Returns the value to be used as evaluation in alphabeta algorithms"""
 def score(s, weight):
     return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
 
+"""Decorates the evaluation function with a given set of weights"""
 def decorator_func_48(deco):
 
+    """Eval function"""
     def func_ataque_48(state, player):
         return score(state, deco)
 
     return func_ataque_48
+
+"""Creates an eval function from a function that only takes the board as a parameter"""
+def decorator_eval_func(deco):
+
+    """Eval function"""
+    def evalFunc(state, player):
+        return deco(state.board)
+
+    return evalFunc
 
 """--------------------------------------------------------------------------------------
     Players
@@ -290,8 +307,8 @@ class Player:
     def display(self):
         print(self.name)
 
-idealAttackerWeight = (0,0,0,0) #TODO
-idealDefenderWeight = (0,0,0,0) #TODO
+idealAttackerWeight = (10.299999999999997, 27.0, 85.0, 74.5)
+idealDefenderWeight = (99.1, 74.6, 37.0, 57.900000000000006)
 
 func_ataque_48 = decorator_func_48(idealAttackerWeight)
 func_defesa_48 = decorator_func_48(idealDefenderWeight)
@@ -407,23 +424,21 @@ def faz_campeonato(listAtk, listDef):
 
     return (listAtk, listDef)
 
-
+"""Creates a new player with a given ADN and a prefix"""
 def createPlayer(prefix, gen):
-    
-    res = {
+    return {
         "player": Player( prefix + str(gen), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_48(gen))),
         "score": 0,
         "adn": gen
     }
-    return res
 
+"""Manually creates a player with the given name and ADN"""
 def createOptPlayer(name, gen):
-    res = {
+    return {
         "player": Player( name, lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_48(gen))),
         "score": 0,
         "adn": gen
     }
-    return res
 
 """--------------------------------------------------------------------------------------
     TEST CODE
@@ -432,7 +447,6 @@ def createOptPlayer(name, gen):
 
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
 listDef = []#[defensor_obsessivo, defensor_hipolito]
-
 
 init_pop = 0
 num_gen = 1000
