@@ -236,6 +236,7 @@ def boardComb(board):
 """The better the disposition of the pieces on the board the better."""
 def boardPos(board):
 
+    """Calculates the score of this criteria for a board"""
     def calcWeight(board1, board2):
         acc = 0
         for i in range(4):
@@ -243,6 +244,7 @@ def boardPos(board):
                 acc += board1[i][j] * board2[i][j]
         return acc
 
+    """Places the pieces in optimal places on the board in order to maximize score"""
     def idealPos(board):
         flat = [item for row in board for item in row]
         flat.sort(reverse=True)
@@ -266,12 +268,14 @@ def boardPos(board):
 
     return curr/base
 
-
+"""Returns the value to be used as evaluation in alphabeta algorithms"""
 def score(s, weight):
     return boardAvg(s.board) * weight[0] + boardComb(s.board) * weight[1] + boardEmpty(s.board) * weight[2] + boardPos(s.board) * weight[3]
 
+"""Decorates the evaluation function with a given set of weights"""
 def decorator_func_48(deco):
 
+    """Eval function"""
     def func_ataque_48(state, player):
         return score(state, deco)
 
@@ -290,8 +294,8 @@ class Player:
     def display(self):
         print(self.name)
 
-idealAttackerWeight = (0,0,0,0) #TODO
-idealDefenderWeight = (0,0,0,0) #TODO
+idealAttackerWeight = (10.299999999999997, 27.0, 85.0, 74.5)
+idealDefenderWeight = (99.1, 74.6, 37.0, 57.900000000000006)
 
 func_ataque_48 = decorator_func_48(idealAttackerWeight)
 func_defesa_48 = decorator_func_48(idealDefenderWeight)
@@ -407,23 +411,21 @@ def faz_campeonato(listAtk, listDef):
 
     return (listAtk, listDef)
 
-
+"""Creates a new player with a given ADN and a prefix"""
 def createPlayer(prefix, gen):
-    
-    res = {
+    return {
         "player": Player( prefix + str(gen), lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_48(gen))),
         "score": 0,
         "adn": gen
     }
-    return res
 
+"""Manually creates a player with the given name and ADN"""
 def createOptPlayer(name, gen):
-    res = {
+    return {
         "player": Player( name, lambda game, state: alphabeta_cutoff_search_new(state, game, 2, eval_fn = decorator_func_48(gen))),
         "score": 0,
         "adn": gen
     }
-    return res
 
 """--------------------------------------------------------------------------------------
     TEST CODE
