@@ -5,28 +5,30 @@ from random import randint
 """--------------------------------------------------------------------------------------
     Helpers
 --------------------------------------------------------------------------------------"""
-ref = [0,0,0,0]
 
+"""rotates a given matrix 90 degrees"""
 def rotate90(board):
     return reverse(transpose(board))
 
-def alignLeft(str, chars):
-    return (" "*(chars-len(str)))+str
-
+""""Inverts a given list"""
 def reverse(line):
     return line[::-1]
 
+"""Transposes a given matrix"""
 def transpose(matrix):
-    return list(map(lambda x: list(x), zip(*matrix)))
+    return [ list(x) for x in zip(*matrix) ]
 
-def removeZeros(line):
+"""Removes zeros from a given array"""
+def remove_zeros(line):
     return list(filter( lambda x: x != 0, line))
 
-def pad(line):
-    return ref[:len(ref)-len(line):] + line
+"""Pads a given array until a given length or 4 by default"""
+def pad(array, leng=4, filler=" ", isStr=True):
+    return (filler if isStr else [filler])*(leng-len(array)) + array
 
-def sumLine(line):
-    li = removeZeros(line)
+"""Sums a line with 2048 rules """
+def sum_line(line):
+    li = remove_zeros(line)
 
     points = 0
     for i in range(len(li)-2, -1, -1):
@@ -36,9 +38,10 @@ def sumLine(line):
             points += li[i+1]
             i -= 1
     
-    return (pad(removeZeros(li)), points)
+    return (pad(remove_zeros(li), filler=0, isStr=False), points)
 
-def sumPoints( m, toReverse, toTranspose):
+"""Sums the points of all the lines"""
+def sum_points( m, toReverse, toTranspose):
     linesAndPoints = list(m)
     board = list( map( lambda x: reverse(x[0]), linesAndPoints) if toReverse else map( lambda x: x[0], linesAndPoints))
     if toTranspose:
@@ -48,11 +51,12 @@ def sumPoints( m, toReverse, toTranspose):
 
     return (board, points)
 
+"""Dictonaries that maps a 2048 action to a function that executes said action in a given board"""
 actions = {
-    "direita": lambda m: sumPoints( map( lambda l: sumLine(l), m ), False, False), 
-    "esquerda": lambda m: sumPoints( map( lambda l: sumLine(reverse(l)) , m ), True, False),
-    "cima": lambda m: sumPoints( map( lambda l: sumLine(reverse(l)) , transpose(m)), True, True),
-    "baixo": lambda m: sumPoints( map( lambda l: sumLine(l) , transpose(m)), False, True)
+    "direita": lambda m: sum_points( map( lambda l: sum_line(l), m ), False, False),
+    "esquerda": lambda m: sum_points( map( lambda l: sum_line(reverse(l)) , m ), True, False),
+    "cima": lambda m: sum_points( map( lambda l: sum_line(reverse(l)) , transpose(m)), True, True),
+    "baixo": lambda m: sum_points( map( lambda l: sum_line(l) , transpose(m)), False, True)
 }
 
 
@@ -99,7 +103,7 @@ class Jogo2048State(GameState):
         print("="*28)
         for i in self.board:
             for j in i:
-                print(alignLeft(str(j), 5), end=" ")
+                print(pad(str(j), leng=5), end=" ")
             print()
         print("="*28)
 
