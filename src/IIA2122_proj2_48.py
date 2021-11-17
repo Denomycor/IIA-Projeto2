@@ -168,7 +168,7 @@ class Jogo2048_48(Game):
         return super().jogar(jogador1, jogador2, verbose)
 
     """Makes a match between two players, with a timeout"""
-    def jogarTimeout(self, jogador1, jogador2, nsec, verbose=True):
+    def jogarTimeout(self, jogador1, jogador2, nsec=-1, verbose=True):
         estado = self.initial
         if verbose :
             self.display
@@ -177,7 +177,10 @@ class Jogo2048_48(Game):
         
         while not self.terminal_test(estado):
             try:
-                ReturnedValue = func_timeout(nsec, jogadores[ind_proximo], args=(self, estado))
+                if nsec == -1:
+                    ReturnedValue = jogadores[ind_proximo](self, estado)
+                else:
+                    ReturnedValue = func_timeout(nsec, jogadores[ind_proximo], args=(self, estado))
             except FunctionTimedOut:
                 print("Timed Out!")
                 ReturnedValue = None
@@ -190,7 +193,7 @@ class Jogo2048_48(Game):
                     self.display(estado)
                 ind_proximo = 1 - ind_proximo
 
-            return self.utility(estado, self.to_move(self.initial))
+        return self.utility(estado, self.to_move(self.initial))
 
 
 """--------------------------------------------------------------------------------------
@@ -313,6 +316,12 @@ idealDefenderWeight = (99.1, 74.6, 37.0, 57.900000000000006)
 func_ataque_48 = decorator_func_48(idealAttackerWeight)
 func_defesa_48 = decorator_func_48(idealDefenderWeight)
 
+def pick_random(game, state):
+    act = game.actions(state)
+    return act[random.randint(0, len(act)-1)]
+
+atacante_ali = Player("AliD", pick_random)
+defensor_ali = Player("DefD", pick_random)
 
 """Alphabeta Players"""
 atacante = Player("atacante",
@@ -443,7 +452,6 @@ def createOptPlayer(name, gen):
 """--------------------------------------------------------------------------------------
     TEST CODE
 --------------------------------------------------------------------------------------"""
-
 
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
 listDef = []#[defensor_obsessivo, defensor_hipolito]
