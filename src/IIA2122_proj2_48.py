@@ -492,24 +492,27 @@ listDef.append(createOptPlayer("Opt3D", (68.6, 68.5, 8, 80.3)))
 listDef.append(createOptPlayer("Opt4D", (54.3, 74.6, 52.9, 48.0)))
 #listDef.append(createOptPlayer("OptOptD", (99.1, 74.6, 37.0, 57.900000000000006)))
 
+def main_gen_loop():
+    for g in range(num_gen):
+        print("Generation: "+str(g))
+        for j in range(len(listAtk)):
+            listAtk[j]["score"] = 0
+            listDef[j]["score"] = 0
+        lists = faz_campeonato(listAtk, listDef)
+        lists = fitness(lists, num_survivors)
+        writetxt(listAtk, 0)
+        writetxt(listDef, 1)
+        listAtk = lists[0]
+        listDef = lists[1]
+        newAtk = []
+        newDef = []
+        for i in range(num_reproduce):
+            ga = mutate( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ), g)
+            newAtk.append( createPlayer( "Atk("+str(g)+")-", ga) )
+            gd = mutate( reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] ), g )
+            newDef.append( createPlayer( "Def("+str(g)+")-", gd) )
+        listAtk.extend(newAtk)
+        listDef.extend(newDef)
 
-for g in range(num_gen):
-    print("Generation: "+str(g))
-    for j in range(len(listAtk)):
-        listAtk[j]["score"] = 0
-        listDef[j]["score"] = 0
-    lists = faz_campeonato(listAtk, listDef)
-    lists = fitness(lists, num_survivors)
-    writetxt(listAtk, 0)
-    writetxt(listDef, 1)
-    listAtk = lists[0]
-    listDef = lists[1]
-    newAtk = []
-    newDef = []
-    for i in range(num_reproduce):
-        ga = mutate( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ), g)
-        newAtk.append( createPlayer( "Atk("+str(g)+")-", ga) )
-        gd = mutate( reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] ), g )
-        newDef.append( createPlayer( "Def("+str(g)+")-", gd) )
-    listAtk.extend(newAtk)
-    listDef.extend(newDef)
+
+#main_gen_loop()
