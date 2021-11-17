@@ -285,6 +285,15 @@ def decorator_func_48(deco):
 
     return func_ataque_48
 
+"""Creates an eval function from a function that only takes the board as a parameter"""
+def decorator_eval_func(deco):
+
+    """Eval function"""
+    def evalFunc(state, player):
+        return deco(state.board)
+
+    return evalFunc
+
 """--------------------------------------------------------------------------------------
     Players
 --------------------------------------------------------------------------------------"""
@@ -438,7 +447,6 @@ def createOptPlayer(name, gen):
 
 listAtk = []#[atacante_hipolito, atacante_obsessivo]
 listDef = []#[defensor_obsessivo, defensor_hipolito]
-
 
 init_pop = 0
 num_gen = 1000
