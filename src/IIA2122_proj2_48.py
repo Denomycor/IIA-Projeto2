@@ -331,7 +331,7 @@ atacante = Player("atacante",
 defensor = Player("defensor",
                   lambda game, state: alphabeta_cutoff_search_new(state, game, 5, eval_fn = func_defesa_48))
 
-"""Input Player"""
+"""Input Player (manual player, for test purposes)"""
 def readConsole(game, state):
     print("points: "+str(state.utility))
     print("Jogadas possíveis: ", state.get_moves())
@@ -476,13 +476,13 @@ listAtk.append(createOptPlayer("Opt1A", (27.1, 72.5, 70.5, 75.0)))
 listAtk.append(createOptPlayer("Opt2A", (99, 28, 78, 23)))
 listAtk.append(createOptPlayer("Opt3A", (87.0, 67.5, 45.5, 75.0)))
 listAtk.append(createOptPlayer("Opt4A", (18.299999999999997, 23.0, 58.0, 72.4)))
-listAtk.append(createOptPlayer("OptOptA", (10.299999999999997, 27.0, 85.0, 74.5)))
+#listAtk.append(createOptPlayer("OptOptA", (10.299999999999997, 27.0, 85.0, 74.5)))
 
 listDef.append(createOptPlayer("Opt1D", (83.1, 23.6, 35.5, 24.9)))
 listDef.append(createOptPlayer("Opt2D", (24.799999999999997, 36.199999999999996, 87.5, 55.8)))
 listDef.append(createOptPlayer("Opt3D", (68.6, 68.5, 8, 80.3)))
 listDef.append(createOptPlayer("Opt4D", (54.3, 74.6, 52.9, 48.0)))
-listDef.append(createOptPlayer("OptOptD", (99.1, 74.6, 37.0, 57.900000000000006)))
+#listDef.append(createOptPlayer("OptOptD", (99.1, 74.6, 37.0, 57.900000000000006)))
 
 
 for g in range(num_gen):
