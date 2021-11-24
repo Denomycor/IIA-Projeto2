@@ -126,10 +126,10 @@ class Jogo2048State(GameState):
 --------------------------------------------------------------------------------------"""
 class Jogo2048_48(Game):
 
-    def __init__(self, pos1, pos2):
+    def __init__(self, positions):
         self.initial = Jogo2048State(to_move = "atacante", utility = 0, board = [ [ 0 for j in range(4)] for i in range(4)], moves = 0)
-        self.initial.board[pos1[0]][pos1[1]]=2
-        self.initial.board[pos2[0]][pos2[1]]=2
+        for pos in positions:
+            self.initial.board[pos[0]][pos[1]]=2
         self.points = 0
 
     """Return a list of the allowable moves at this point."""
@@ -381,7 +381,7 @@ defensor_hipolito = Player("hipolitoD", hipolito_48)
 
 """Generates a game with a random initial board"""
 def randomGame():
-    return Jogo2048_48([randint(0,3), randint(0,3)], [randint(0,3), randint(0,3)])
+    return Jogo2048_48({(randint(0,3), randint(0,3)), (randint(0,3), randint(0,3))})
 
 """Generates a random set of weights for the genetic algorithm"""
 def generate():
@@ -462,72 +462,5 @@ def createOptPlayer(name, gen):
 """--------------------------------------------------------------------------------------
     TEST CODE
 --------------------------------------------------------------------------------------"""
-
-seqTeste=['cima',"1,0","cima","3,3","cima","2,0","direita","2,0","esquerda","1,0",
-          "baixo","0,2","baixo","0,0","direita","2,0","cima","2,2","baixo","1,0",
-          "esquerda","0,1","baixo","0,2","esquerda","0,2","baixo","0,3","cima","2,3",
-          "cima","2,0","esquerda","3,2","cima","1,2","esquerda","3,1","direita","3,1",
-          "direita","0,0"]
-
-fig3 = [[0,0,0,0],[0,0,0,0],[0,2,2,0],[0,0,0,0]]
-state4 = randomGame().resultActions(Jogo2048State(to_move = "atacante", utility = 0, board = fig3, moves=0), seqTeste)
-
-stat5 = randomGame().result(Jogo2048State(to_move = "atacante", utility = 0, board = fig3, moves=0), "cima")
-stat6 = randomGame().result(stat5, "1,0")
-
-randomGame().display(state4)
-
-
-listAtk = []#[atacante_hipolito, atacante_obsessivo]
-listDef = []#[defensor_obsessivo, defensor_hipolito]
-
-init_pop = 0
-num_gen = 1000
-num_reproduce = 1
-num_survivors = 3
-
-#createOptPlayer("Opt1AHipolito", (13, 47, 54, 57))
-#createOptPlayer("Opt2AHipolito", (18, 47, 54, 57))
-
-for i in range(init_pop):
-    ga = generate()
-    listAtk.append( createPlayer( "Atk-", ga) )
-    gd = generate()
-    listDef.append( createPlayer( "Def-", gd) )
-
-listAtk.append(createOptPlayer("Opt1A", (27.1, 72.5, 70.5, 75.0)))
-listAtk.append(createOptPlayer("Opt2A", (99, 28, 78, 23)))
-listAtk.append(createOptPlayer("Opt3A", (87.0, 67.5, 45.5, 75.0)))
-listAtk.append(createOptPlayer("Opt4A", (18.299999999999997, 23.0, 58.0, 72.4)))
-#listAtk.append(createOptPlayer("OptOptA", (10.299999999999997, 27.0, 85.0, 74.5)))
-
-listDef.append(createOptPlayer("Opt1D", (83.1, 23.6, 35.5, 24.9)))
-listDef.append(createOptPlayer("Opt2D", (24.799999999999997, 36.199999999999996, 87.5, 55.8)))
-listDef.append(createOptPlayer("Opt3D", (68.6, 68.5, 8, 80.3)))
-listDef.append(createOptPlayer("Opt4D", (54.3, 74.6, 52.9, 48.0)))
-#listDef.append(createOptPlayer("OptOptD", (99.1, 74.6, 37.0, 57.900000000000006)))
-
-def main_gen_loop():
-    for g in range(num_gen):
-        print("Generation: "+str(g))
-        for j in range(len(listAtk)):
-            listAtk[j]["score"] = 0
-            listDef[j]["score"] = 0
-        lists = faz_campeonato(listAtk, listDef)
-        lists = fitness(lists, num_survivors)
-        writetxt(listAtk, 0)
-        writetxt(listDef, 1)
-        listAtk = lists[0]
-        listDef = lists[1]
-        newAtk = []
-        newDef = []
-        for i in range(num_reproduce):
-            ga = mutate( reproduce(listAtk[randint(0, len(listAtk)-1)]["adn"], listAtk[randint(0, len(listAtk)-1)]["adn"] ), g)
-            newAtk.append( createPlayer( "Atk("+str(g)+")-", ga) )
-            gd = mutate( reproduce(listDef[randint(0, len(listDef)-1)]["adn"], listDef[randint(0, len(listDef)-1)]["adn"] ), g )
-            newDef.append( createPlayer( "Def("+str(g)+")-", gd) )
-        listAtk.extend(newAtk)
-        listDef.extend(newDef)
-
-
-#main_gen_loop()
+randomGame().jogarTimeout(atacante_ali.alg, defensor_ali.alg, 10, False)
+randomGame().jogarTimeout(atacante_ali.alg, defensor_ali.alg, verbose=False)
